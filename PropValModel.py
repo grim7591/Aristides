@@ -69,4 +69,6 @@ train_data.hist(figsize=(15,8))
 train_data.township_code.value_counts()
 # %%
 train_data.range_code.value_counts()
+# %% [markdown]
+# Need a location factor. Edit the MA spreadsheets to make Cluster ID unique then join into data
 # %%
