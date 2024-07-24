@@ -15,13 +15,54 @@
 #       - Use non time adjusted sales and year becomes a factor?
 # - Identify less than 20 features to test for
 #   - Examples from Lee:
-#       - base area, age, 
-#       - improvement code 
-#       - quality, 
+#       - base area 
+#       - age 
+#       - neighborhood/market area 
+#       - quality 
 #       - land square ft
 # - Do everything else
 # %%
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns 
+import seaborn as sns
+
+data = pd.read_csv("datapull1.csv") 
+
+data
+
+data.info() 
+# %%
+
+data.dropna(inplace=True)
+
+data
+
+data.info()
+# %%
+from sklearn.model_selection import train_test_split
+
+X = data.drop(['sl_price'], axis = 1)
+y = data['sl_price']
+# %%
+X
+# %%
+y
+# %%
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+# %%
+train_data = X_train.join(y_train)
+# %%
+train_data
+# %%
+train_data.hist(figsize =(15,8))
+# %%
+plt.figure(figsize=(15,8))
+sns.heatmap(train_data.corr(numeric_only=True), annot=True, cmap="YlGnBu")
+# %%
+train_data['legal_acreage'] = np.log(train_data['legal_acreage'] + 1)
+train_data['sl_price'] = np.log(train_data['sl_price'] + 1)
+train_data['living_area'] = np.log(train_data['living_area'] + 1)
+# %%
+train_data.hist(figsize=(15,8))
+# %%
