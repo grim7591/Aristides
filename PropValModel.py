@@ -66,3 +66,7 @@ train_data['living_area'] = np.log(train_data['living_area'] + 1)
 # %%
 train_data.hist(figsize=(15,8))
 # %%
+train_data.township_code.value_counts()
+# %%
+train_data.range_code.value_counts()
+# %%
