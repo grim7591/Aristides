@@ -131,7 +131,7 @@ result = result.join(pd.get_dummies(result.city_id)).drop(['city_id'], axis=1)
 # %%
 result = result.join(pd.get_dummies(result.land_type_cd)).drop(['land_type_cd'], axis=1)
 # %%
-result.join(pd.get_dummies(result.Cluster_ID)).drop(['Cluster_ID'], axis=1)
+result = result.join(pd.get_dummies(result.Cluster_ID)).drop(['Cluster_ID'], axis=1)
 # %%
 plt.figure(figsize=(15,8))
 sns.heatmap(result.corr(numeric_only=True), annot=True, cmap="YlGnBu")
@@ -148,4 +148,40 @@ y = result['sl_price']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 # %%
 train_data = X_train.join(y_train)
+# %%
+from sklearn.linear_model import LinearRegression
+# %%
+X_Train = train_data.drop(['sl_price'], axis=1)
+y_train = train_data['sl_price'] 
+# %%
+reg = LinearRegression()
+# %%
+reg.fit(X_Train, y_train)
+# %%
+X_train.columns = X_train.columns.astype(str)
+# %%
+print([type(col) for col in X_Train.columns])
+# %%
+train_data.columns = train_data.columns.astype(str)
+# %%
+X_Train = train_data.drop(['sl_price'], axis=1)
+y_train = train_data['sl_price'] 
+# %%
+reg = LinearRegression()
+# %%
+reg.fit(X_Train, y_train)
+# %%
+train_data
+# %%
+result
+# %%
+data3 = pd.read_csv('datapull4.csv')
+# %%
+plt.figure(figsize=(15,8))
+sns.scatterplot(x="CENTROID_X", y="CENTROID_Y", data=data3, hue="sl_price", palette="coolwarm")
+# %%
+data3['sl_price'] = np.log(data3['sl_price'] + 1)
+# %%
+plt.figure(figsize=(15,8))
+sns.scatterplot(x="CENTROID_X", y="CENTROID_Y", data=data3, hue="sl_price", palette="coolwarm")
 # %%
