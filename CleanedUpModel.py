@@ -7,7 +7,7 @@ import seaborn as sns
 market_area_1 = pd.read_csv('MA1_Export_20240719.csv')
 market_area_2 = pd.read_csv('MA2_Export_20240719.csv')
 market_area_3 = pd.read_csv('MA3_Export_20240719.csv')
-data_2 = pd.read_csv("datapull5.csv")
+data_2 = pd.read_csv("dp10.csv")
 # %%
 market_area_1 = market_area_1[['prop_id', 'Cluster_ID']]
 market_area_2 = market_area_2[['prop_id', 'Cluster_ID']]
@@ -48,4 +48,10 @@ reg = LinearRegression()
 reg.fit(X_train, y_train)
 # %%
 reg.score(X_test, y_test)
+# %%
+coef_df = pd.DataFrame({
+    'Feature': X.columns,
+    'Coefficient': reg.coef_
+})
+print(coef_df)
 # %%
