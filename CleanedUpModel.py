@@ -49,3 +49,9 @@ reg.fit(X_train, y_train)
 # %%
 reg.score(X_test, y_test)
 # %%
+coef_df = pd.DataFrame({
+    'Feature': X.columns,
+    'Coefficient': reg.coef_
+})
+print(coef_df)
+# %%
