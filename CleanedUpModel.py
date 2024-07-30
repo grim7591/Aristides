@@ -7,7 +7,7 @@ import seaborn as sns
 market_area_1 = pd.read_csv('MA1_Export_20240719.csv')
 market_area_2 = pd.read_csv('MA2_Export_20240719.csv')
 market_area_3 = pd.read_csv('MA3_Export_20240719.csv')
-data_2 = pd.read_csv("dp10.csv")
+data_2 = pd.read_csv("dp12.csv")
 # %%
 market_area_1 = market_area_1[['prop_id', 'Cluster_ID']]
 market_area_2 = market_area_2[['prop_id', 'Cluster_ID']]
@@ -30,6 +30,8 @@ result['yr_blt'] = np.log(result['yr_blt'] + 1)
 result = result.join(pd.get_dummies(result.tax_area_description)).drop(['tax_area_description'], axis=1)
 # %%
 result = result.join(pd.get_dummies(result.land_type_cd)).drop(['land_type_cd'], axis=1)
+# %%
+#result = result.join(pd.get_dummies(result.abs_subdv_cd)).drop(['abs_subdv_cd'], axis=1)
 # %%
 result = result.join(pd.get_dummies(result.Cluster_ID)).drop(['Cluster_ID'], axis=1)
 # %%
