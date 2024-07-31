@@ -7,7 +7,7 @@ import seaborn as sns
 market_area_1 = pd.read_csv('MA1_Export_20240719.csv')
 market_area_2 = pd.read_csv('MA2_Export_20240719.csv')
 market_area_3 = pd.read_csv('MA3_Export_20240719.csv')
-data_2 = pd.read_csv("dp12.csv")
+data_2 = pd.read_csv("dp14.csv")
 # %%
 market_area_1 = market_area_1[['prop_id', 'Cluster_ID']]
 market_area_2 = market_area_2[['prop_id', 'Cluster_ID']]
@@ -25,15 +25,17 @@ result
 result['legal_acreage'] = np.log(result['legal_acreage'] + 1)
 result['sl_price'] = np.log(result['sl_price'] + 1)
 result['living_area'] = np.log(result['living_area'] + 1)
-result['yr_blt'] = np.log(result['yr_blt'] + 1)
+result['actual_age'] = np.log(result['actual_age'] + 1)
 # %%
 result = result.join(pd.get_dummies(result.tax_area_description)).drop(['tax_area_description'], axis=1)
 # %%
 result = result.join(pd.get_dummies(result.land_type_cd)).drop(['land_type_cd'], axis=1)
-# %%
-#result = result.join(pd.get_dummies(result.abs_subdv_cd)).drop(['abs_subdv_cd'], axis=1)
-# %%
+# %
 result = result.join(pd.get_dummies(result.Cluster_ID)).drop(['Cluster_ID'], axis=1)
+# %%
+result['in_subdivision'] = result['abs_subdv_cd'].apply(lambda x: True if x > 0 else False)
+# %%
+result = result.drop(columns=['abs_subdv_cd'])
 # %%
 result.columns = result.columns.astype(str)
 # %%
@@ -56,4 +58,6 @@ coef_df = pd.DataFrame({
     'Coefficient': reg.coef_
 })
 print(coef_df)
+# %%
+result
 # %%
