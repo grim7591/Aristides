@@ -22,10 +22,10 @@ result = result.drop(['prop_id'], axis=1)
 # %%
 result
 # %%
-result['legal_acreage'] = np.log(result['legal_acreage'] + 1)
-result['sl_price'] = np.log(result['sl_price'] + 1)
-result['living_area'] = np.log(result['living_area'] + 1)
-result['actual_age'] = np.log(result['actual_age'] + 1)
+result['legal_acreage'] = np.log(result['legal_acreage'])
+result['sl_price'] = np.log(result['sl_price'])
+result['living_area'] = np.log(result['living_area'])
+result['actual_age'] = np.log(result['actual_age'])
 # %%
 result = result.join(pd.get_dummies(result.tax_area_description)).drop(['tax_area_description'], axis=1)
 # %%
