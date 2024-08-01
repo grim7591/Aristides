@@ -4,17 +4,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 # %%
-market_area_1 = pd.read_csv('MA1_Export_20240719.csv')
-market_area_2 = pd.read_csv('MA2_Export_20240719.csv')
-market_area_3 = pd.read_csv('MA3_Export_20240719.csv')
+market_areas = pd.read_csv('MarketAreaPull.csv')
 data_2 = pd.read_csv("dp14.csv")
 # %%
-market_area_1 = market_area_1[['prop_id', 'Cluster_ID']]
-market_area_2 = market_area_2[['prop_id', 'Cluster_ID']]
-market_area_3 = market_area_3[['prop_id', 'Cluster_ID']]
+market_areas = market_areas[['prop_id', 'Market_Area']]
 # %%
-market_areas = pd.concat([market_area_1, market_area_2, market_area_3])
-result = pd.merge(data_2, market_areas, how='left', on='prop_id')
+market_areas.dropna(inplace=True)
+# %%
+market_areas = market_areas[market_areas['Market_Area'] != '<Null>']
+market_areas = market_areas[market_areas['prop_id'] != '<Null>']
+# %%
+data_2['prop_id'] = data_2['prop_id'].astype(str)
+market_areas['prop_id'] = market_areas['prop_id'].astype(str)
+# %%
+result = pd.merge(data_2, market_areas, how='inner', on='prop_id')
 # %%
 result.dropna(inplace=True)
 # %%
@@ -31,7 +34,7 @@ result = result.join(pd.get_dummies(result.tax_area_description)).drop(['tax_are
 # %%
 result = result.join(pd.get_dummies(result.land_type_cd)).drop(['land_type_cd'], axis=1)
 # %
-result = result.join(pd.get_dummies(result.Cluster_ID)).drop(['Cluster_ID'], axis=1)
+result = result.join(pd.get_dummies(result.Market_Area)).drop(['Market_Area'], axis=1)
 # %%
 result['in_subdivision'] = result['abs_subdv_cd'].apply(lambda x: True if x > 0 else False)
 # %%
