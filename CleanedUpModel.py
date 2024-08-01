@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 # %%
 market_areas = pd.read_csv('MarketAreaPull.csv')
-data_2 = pd.read_csv("dp14.csv")
+data_2 = pd.read_csv("dpsweet16.csv")
 # %%
 market_areas = market_areas[['prop_id', 'Market_Area']]
 # %%
@@ -26,7 +26,7 @@ result = result.drop(['prop_id'], axis=1)
 result
 # %%
 result['legal_acreage'] = np.log(result['legal_acreage'])
-result['sl_price'] = np.log(result['sl_price'])
+result['Aessessment_Val'] = np.log(result['Aessessment_Val'])
 result['living_area'] = np.log(result['living_area'])
 result['actual_age'] = np.log(result['actual_age'])
 # %%
@@ -43,8 +43,8 @@ result = result.drop(columns=['abs_subdv_cd'])
 result.columns = result.columns.astype(str)
 # %%
 from sklearn.model_selection import train_test_split
-X = result.drop(['sl_price'], axis=1)
-y = result['sl_price']
+X = result.drop(['Aessessment_Val'], axis=1)
+y = result['Aessessment_Val']
 # %%
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 # %%
