@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 # %%
 market_areas = pd.read_csv('MarketAreaPull.csv')
-data_2 = pd.read_csv("dpsweet16.csv")
+data_2 = pd.read_csv("dp17.csv")
 # %%
 market_areas = market_areas[['prop_id', 'Market_Area']]
 # %%
@@ -14,10 +14,16 @@ market_areas.dropna(inplace=True)
 market_areas = market_areas[market_areas['Market_Area'] != '<Null>']
 market_areas = market_areas[market_areas['prop_id'] != '<Null>']
 # %%
-data_2['prop_id'] = data_2['prop_id'].astype(str)
-market_areas['prop_id'] = market_areas['prop_id'].astype(str)
+ma_unique = market_areas.drop_duplicates()
 # %%
-result = pd.merge(data_2, market_areas, how='inner', on='prop_id')
+duplicates = ma_unique[ma_unique.duplicated(subset='prop_id', keep=False)]
+# %%
+ma_cleaned = ma_unique[~ma_unique['prop_id'].isin(duplicates['prop_id'])].copy()
+# %%
+data_2['prop_id'] = data_2['prop_id'].astype(str)
+ma_cleaned['prop_id'] = ma_cleaned['prop_id'].astype(str)
+# %%
+result = pd.merge(data_2, ma_cleaned, how='inner', on='prop_id')
 # %%
 result.dropna(inplace=True)
 # %%
@@ -32,8 +38,8 @@ result['actual_age'] = np.log(result['actual_age'])
 # %%
 result = result.join(pd.get_dummies(result.tax_area_description)).drop(['tax_area_description'], axis=1)
 # %%
-result = result.join(pd.get_dummies(result.land_type_cd)).drop(['land_type_cd'], axis=1)
-# %
+#result = result.join(pd.get_dummies(result.land_type_cd)).drop(['land_type_cd'], axis=1)
+# %%
 result = result.join(pd.get_dummies(result.Market_Area)).drop(['Market_Area'], axis=1)
 # %%
 result['in_subdivision'] = result['abs_subdv_cd'].apply(lambda x: True if x > 0 else False)
