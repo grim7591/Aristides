@@ -198,12 +198,34 @@ data = result
 # %%
 column_mapping = {
     'HIGH SPRINGS' : 'HIGH_SPRINGS',
-    "ST. JOHN'S" : 'ST_JOHNS'    
-}
+    "ST. JOHN'S" : 'ST_JOHNS',
+    '1A' : 'AA',
+    '1B' : 'AB',
+    '1C' : 'AC',
+    '2A' : 'BA',
+    '2B' : 'BB',
+    '2C' : 'BC',
+
+    '3A' : 'CA',
+    '3B' : 'CB',
+    '3C' : 'CC',
+
+    '4A' : 'DA',
+    '4B' : 'DB',
+    '4C' : 'DC',
+
+    '5A' : 'EA',
+    '5B' : 'EB',
+    '5C' : 'EC',
+
+    '6A' : 'FA',
+    '6B' : 'FB',
+    '6C' : 'FC',  
+    }
 #  %%
 data.rename(columns=column_mapping, inplace=True)    
 # %%
-regressionFormula = "np.log(Aessessment_Val) ~ np.log(living_area)+np.log(legal_acreage)+np.log(actual_age)+np.log(imprv_det_quality_cd)+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+NEWBERRY+WALDO+1A+1B+1C+2A+2C+3A+3B+4A+4B+4C+5A+5B+5C+6A+6B+6C+in_subdivision"
+regressionFormula = "np.log(Aessessment_Val) ~ np.log(living_area)+np.log(legal_acreage)+np.log(actual_age)+np.log(imprv_det_quality_cd)+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+NEWBERRY+WALDO+AA+AB+AC+BA+BC+CA+CB+DA+DB+DC+EA+EB+EC+FA+FB+FC+in_subdivision"
 # %%
 regresult = smf.ols(formula=regressionFormula, data=data).fit()
 regresult.summary()
