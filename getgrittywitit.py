@@ -8,29 +8,23 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 from statsmodels.stats.outliers_influence import variance_inflation_factor as vif
 # %%
-market_areas = pd.read_csv('MarketAreaPull.csv')
-data_2 = pd.read_csv("dp17.csv")
-fixed_dupes = pd.read_csv('fixed_dupes.csv')
+market_areas = pd.read_csv('MarketAreaPull2.csv')
+data_2 = pd.read_csv("dp18.csv")
 # %%
-market_areas = market_areas[['prop_id', 'Market_Area']]
+market_areas = market_areas[['prop_id', 'Market Area', 'Cluster ID']]
 # %%
 market_areas.dropna(inplace=True)
 # %%
-market_areas = market_areas[market_areas['Market_Area'] != '<Null>']
+market_areas = market_areas[market_areas['Market Area'] != '<Null>']
 market_areas = market_areas[market_areas['prop_id'] != '<Null>']
 # %%
-ma_unique = market_areas.drop_duplicates()
-# %%
-duplicates = ma_unique[ma_unique.duplicated(subset='prop_id', keep=False)]
-# %%
-ma_cleaned = ma_unique[~ma_unique['prop_id'].isin(duplicates['prop_id'])].copy()
-# %%
-ma_cleaned = pd.concat([ma_cleaned, fixed_dupes])
+market_areas['Market_Cluster_ID'] = market_areas['Market Area'].astype(str) + market_areas['Cluster ID'].astype(str)
 # %%
 data_2['prop_id'] = data_2['prop_id'].astype(str)
-ma_cleaned['prop_id'] = ma_cleaned['prop_id'].astype(str)
+market_areas['prop_id'] = market_areas['prop_id'].astype(str)
+market_areas['Market_Cluster_ID'] = market_areas['Market_Cluster_ID'].astype(str)
 # %%
-result = pd.merge(data_2, ma_cleaned, how='inner', on='prop_id')
+result = pd.merge(data_2, market_areas, how='inner', on='prop_id')
 # %%
 result.dropna(inplace=True)
 # %%
@@ -38,7 +32,7 @@ result = result.drop(['prop_id'], axis=1)
 # %%
 result = result.join(pd.get_dummies(result.tax_area_description)).drop(['tax_area_description'], axis=1)
 # %%
-result = result.join(pd.get_dummies(result.Market_Area)).drop(['Market_Area'], axis=1)
+result = result.join(pd.get_dummies(result.Market_Cluster_ID)).drop(['Market_Cluster_ID'], axis=1)
 # %%
 result['in_subdivision'] = result['abs_subdv_cd'].apply(lambda x: True if x > 0 else False)
 # %%
@@ -203,32 +197,27 @@ def model_corrupted_data(data, model_formula, error_column, percent_corrupted, e
 data = result
 # %%
 column_mapping = {
-    '1': 'A',
-    '2': 'B',
-    '3': 'C',
-    '4': 'D',
-    '5': 'E',
-    '6': 'F',
     'HIGH SPRINGS' : 'HIGH_SPRINGS',
     "ST. JOHN'S" : 'ST_JOHNS'    
 }
 #  %%
 data.rename(columns=column_mapping, inplace=True)    
 # %%
-regressionFormula = "np.log(Aessessment_Val) ~ np.log(living_area)+np.log(legal_acreage)+np.log(actual_age)+np.log(condition_cd)+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+NEWBERRY+WALDO+A+C+D+E+F+in_subdivision"
+regressionFormula = "np.log(Aessessment_Val) ~ np.log(living_area)+np.log(legal_acreage)+np.log(actual_age)+np.log(imprv_det_quality_cd)+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+NEWBERRY+WALDO+1A+1B+1C+2A+2C+3A+3B+4A+4B+4C+5A+5B+5C+6A+6B+6C+in_subdivision"
 # %%
 regresult = smf.ols(formula=regressionFormula, data=data).fit()
 regresult.summary()
 # %%
-regressionFormula_2 = "np.log(Aessessment_Val) ~ np.log(living_area * condition_cd)+np.log(legal_acreage)+np.log(actual_age)+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+WALDO+A+C+D+E+F+in_subdivision"
+## Everything after this is me just messing with other ways of doing this and evaluating factors and such
+regressionFormula_2 = "np.log(Aessessment_Val) ~ np.log(living_area * imprv_det_quality_cd)+np.log(legal_acreage)+np.log(actual_age)+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+WALDO+in_subdivision"
 # %%
 plt.figure(figsize=(15,8))
 sns.heatmap(data.corr(numeric_only=True), annot=True, cmap="YlGnBu")
 
 # %%
-regressionFormula_3 = "np.log(Aessessment_Val) ~ np.log(living_area * condition_cd)+np.log(legal_acreage)+np.log(actual_age)+A+B+C+D+E+F+in_subdivision"
+regressionFormula_3 = "np.log(Aessessment_Val) ~ np.log(living_area * imprv_det_quality_cd)+np.log(legal_acreage)+np.log(actual_age)+A+B+C+D+E+F+in_subdivision"
 # %%
-data_copy = sm.add_constant()
+data_copy = sm.add_constant(data)
 #data_copy = data_copy.select_dtypes(include=[np.number])
 # %%
 vif_data = pd.DataFrame()
@@ -240,11 +229,11 @@ print(vif_data)
 # %%
 data_numeric = data.apply(lambda x: x.astype(int) if x.dtype == 'bool' else x)
 # %%
-regressionFormula_3 = "np.log(Aessessment_Val) ~ np.log(living_area * condition_cd)+np.log(legal_acreage)+np.log(actual_age)+in_subdivision"
+regressionFormula_3 = "np.log(Aessessment_Val) ~ np.log(living_area * imprv_det_quality_cd)+np.log(legal_acreage)+np.log(actual_age)+in_subdivision"
 # %%
 data_numeric_reduced = data_numeric.drop(columns=['ST_JOHNS','SUWANNEE', 'B'])
 data_copy = sm.add_constant(data_numeric_reduced)
 # %%
-value_counts = ma_cleaned['Market_Area'].value_counts()
+value_counts = result['Market_Cluster_ID'].value_counts()
 print(value_counts)
 # %%
