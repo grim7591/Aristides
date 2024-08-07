@@ -36,9 +36,15 @@ result = result.join(pd.get_dummies(result.Market_Cluster_ID)).drop(['Market_Clu
 # %%
 result['in_subdivision'] = result['abs_subdv_cd'].apply(lambda x: True if x > 0 else False)
 # %%
-result = result.drop(columns=['abs_subdv_cd'])
+result = result.drop(columns=['abs_subdv_cd', 'Market Area', 'Cluster ID'])
 # %%
 result.columns = result.columns.astype(str)
+# %%
+from sklearn.model_selection import train_test_split
+X = result.drop(['Aessessment_Val'], axis=1)
+y = result['Aessessment_Val']
+# %%
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 # %%
 #----------------------------------
 # Mass appraisal functions
@@ -202,6 +208,7 @@ column_mapping = {
     '1A' : 'AA',
     '1B' : 'AB',
     '1C' : 'AC',
+    
     '2A' : 'BA',
     '2B' : 'BB',
     '2C' : 'BC',
@@ -258,4 +265,13 @@ data_copy = sm.add_constant(data_numeric_reduced)
 # %%
 value_counts = result['Market_Cluster_ID'].value_counts()
 print(value_counts)
+# %%
+# %%
+from sklearn.linear_model import LinearRegression
+# %%
+reg = LinearRegression()
+# %%
+reg.fit(X_train, y_train)
+# %%
+reg.score(X_test, y_test)
 # %%
