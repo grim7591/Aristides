@@ -9,9 +9,10 @@ import seaborn as sns
 from statsmodels.stats.outliers_influence import variance_inflation_factor as vif
 # %%
 market_areas = pd.read_csv('normalizedMAs.csv')
-data_2 = pd.read_csv("dp18.csv")
+data_2 = pd.read_csv("dp20.csv")
 # %%
 market_areas = market_areas[['prop_id', 'MA', 'Cluster ID']]
+data_2['Aessment_Val'] = data_2['sl_price'] - data_2['Total_MISC_Val']
 # %%
 market_areas.dropna(inplace=True)
 # %%
@@ -29,6 +30,8 @@ result = pd.merge(data_2, market_areas, how='inner', on='prop_id')
 result.dropna(inplace=True)
 # %%
 result = result.drop(['prop_id'], axis=1)
+# %%
+result = result.join(pd.get_dummies(result.imprv_det_quality_cd)).drop(['imprv_det_quality_cd'], axis=1)
 # %%
 result = result.join(pd.get_dummies(result.tax_area_description)).drop(['tax_area_description'], axis=1)
 # %%
@@ -199,6 +202,12 @@ data = result
 column_mapping = {
     'HIGH SPRINGS' : 'HIGH_SPRINGS',
     "ST. JOHN'S" : 'ST_JOHNS',
+    '1.0' : 'A',
+    '2.0' : 'B',
+    '3.0' : 'C',
+    '4.0' : 'D',
+    '5.0' : 'E',
+    '6.0' : 'F'
 # I just don't trust that I won't need these again so Im keeping them
 #    '1A' : 'AA',
 #    '1B' : 'AB',
@@ -228,11 +237,12 @@ column_mapping = {
 data.rename(columns=column_mapping, inplace=True)    
 # %%
 regressionFormula = "np.log(Aessessment_Val) ~ np.log(living_area)+np.log(legal_acreage)+np.log(actual_age)+np.log(imprv_det_quality_cd)+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+NEWBERRY+WALDO+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision"
+regressionFormula_2 = "np.log(Aessessment_Val) ~ np.log(living_area)+np.log(legal_acreage)+np.log(actual_age)+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+NEWBERRY+WALDO+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision+A+B+D+E+F"
 # %%
 from sklearn.model_selection import train_test_split
 train_data, test_data = train_test_split(data, test_size=0.2, random_state=42)
 # %%
-regresult = smf.ols(formula=regressionFormula, data=train_data).fit()
+regresult = smf.ols(formula=regressionFormula_2, data=train_data).fit()
 regresult.summary()
 # %%
 predictions = test_data.copy()
@@ -277,7 +287,7 @@ regressionFormula_3 = "np.log(Aessessment_Val) ~ np.log(living_area * imprv_det_
 data_numeric_reduced = data_numeric.drop(columns=['ST_JOHNS','SUWANNEE', 'B'])
 data_copy = sm.add_constant(data_numeric_reduced)
 # %%
-value_counts = result['Market_Cluster_ID'].value_counts()
+value_counts = result['B'].value_counts()
 print(value_counts)
 # %%
 from sklearn.model_selection import train_test_split
