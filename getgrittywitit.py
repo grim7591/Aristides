@@ -242,7 +242,7 @@ regressionFormula_3 = "np.log(Aessessment_Val) ~ np.log(living_area)+np.log(lega
 from sklearn.model_selection import train_test_split
 train_data, test_data = train_test_split(data, test_size=0.2, random_state=42)
 # %%
-regresult = smf.ols(formula=regressionFormula_3, data=train_data).fit()
+regresult = smf.ols(formula=regressionFormula_2, data=train_data).fit()
 regresult.summary()
 # %%
 predictions = test_data.copy()
