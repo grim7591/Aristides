@@ -12,7 +12,7 @@ market_areas = pd.read_csv('normalizedMAs.csv')
 data_2 = pd.read_csv("dp20.csv")
 # %%
 market_areas = market_areas[['prop_id', 'MA', 'Cluster ID']]
-data_2['Aessessment_Val'] = data_2['sl_price'] - data_2['Total_MISC_Val']
+data_2['Aessessment_Val'] =.85 * (data_2['sl_price'] - (data_2['Total_MISC_Val']/.85))
 # %%
 market_areas.dropna(inplace=True)
 # %%
@@ -236,13 +236,13 @@ column_mapping = {
 #  %%
 data.rename(columns=column_mapping, inplace=True)    
 # %%
-regressionFormula = "np.log(Aessessment_Val) ~ np.log(living_area)+np.log(legal_acreage)+np.log(effective_age)+np.log(imprv_det_quality_cd)+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+NEWBERRY+WALDO+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision"
 regressionFormula_2 = "np.log(Aessessment_Val) ~ np.log(living_area)+np.log(legal_acreage)+np.log(effective_age)+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+NEWBERRY+WALDO+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision+A+B+D+E+F"
+regressionFormula_3 = "np.log(Aessessment_Val) ~ np.log(living_area)+np.log(legal_acreage)+np.log(1-(effective_age/100))+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+NEWBERRY+WALDO+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision+A+B+D+E+F"
 # %%
 from sklearn.model_selection import train_test_split
 train_data, test_data = train_test_split(data, test_size=0.2, random_state=42)
 # %%
-regresult = smf.ols(formula=regressionFormula_2, data=train_data).fit()
+regresult = smf.ols(formula=regressionFormula_3, data=train_data).fit()
 regresult.summary()
 # %%
 predictions = test_data.copy()
@@ -261,12 +261,19 @@ mse = mean_squared_error(actual_values, predicted_values)
 r2 = r2_score(actual_values, predicted_values)
 PRD_table = PRD(actual_values, predicted_values)
 COD_table = COD(actual_values, predicted_values)
+PRB_table = PRB(actual_values, predicted_values)
+wm = weightedMean(actual_values, predicted_values)
+ad = averageDeviation(actual_values, predicted_values)
+
 
 print(f"Mean Absolute Error: {mae}")
 print(f"Mean Squared Error: {mse}")
 print(f"R-squared: {r2}")
 print(f"PRD: {PRD_table}")
 print(f"COD: {COD_table}")
+print(f"PRB: {PRB_table}")
+print(f"weightedMeme: {wm}")
+print(f"averageDevitation: {ad}")
 # %%
 ## Everything after this is me just messing with other ways of doing this and evaluating factors and such
 '''
