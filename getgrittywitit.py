@@ -8,11 +8,11 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 from statsmodels.stats.outliers_influence import variance_inflation_factor as vif
 # %%
-market_areas = pd.read_csv('normalizedMAs.csv')
-data_2 = pd.read_csv("dp20.csv")
+market_areas = pd.read_csv('Data/normalizedMAs.csv')
+sale_data = pd.read_csv("Data/dp20.csv")
 # %%
 market_areas = market_areas[['prop_id', 'MA', 'Cluster ID']]
-data_2['Aessessment_Val'] =.85 * (data_2['sl_price'] - (data_2['Total_MISC_Val']/.85))
+sale_data['Assessmeent_Val'] =.85 * (sale_data['sl_price'] - (sale_data['Total_MISC_Val']/.85))
 # %%
 market_areas.dropna(inplace=True)
 # %%
@@ -21,11 +21,11 @@ market_areas = market_areas[market_areas['prop_id'] != '<Null>']
 # %%
 market_areas['Market_Cluster_ID'] = market_areas['MA'].astype(str) + '_' + market_areas['Cluster ID'].astype(str)
 # %%
-data_2['prop_id'] = data_2['prop_id'].astype(str)
+sale_data['prop_id'] = sale_data['prop_id'].astype(str)
 market_areas['prop_id'] = market_areas['prop_id'].astype(str)
 market_areas['Market_Cluster_ID'] = market_areas['Market_Cluster_ID'].astype(str)
 # %%
-result = pd.merge(data_2, market_areas, how='inner', on='prop_id')
+result = pd.merge(sale_data, market_areas, how='inner', on='prop_id')
 # %%
 result.dropna(inplace=True)
 # %%
@@ -40,6 +40,9 @@ result = result.join(pd.get_dummies(result.Market_Cluster_ID)).drop(['Market_Clu
 result['in_subdivision'] = result['abs_subdv_cd'].apply(lambda x: True if x > 0 else False)
 # %%
 result = result.drop(columns=['abs_subdv_cd', 'MA', 'Cluster ID', 'sl_price', 'Total_MISC_Val'])
+# %%
+result['percent_good'] = 1- (result['effective_age']/100)
+result = result.drop(['effective_age'], axis =1)
 # %%
 result.columns = result.columns.astype(str)
 # %%
@@ -208,36 +211,11 @@ column_mapping = {
     '4.0' : 'D',
     '5.0' : 'E',
     '6.0' : 'F'
-# I just don't trust that I won't need these again so Im keeping them
-#    '1A' : 'AA',
-#    '1B' : 'AB',
-#   '1C' : 'AC',
-#    
-#    '2A' : 'BA',
-#    '2B' : 'BB',
-#    '2C' : 'BC',
-
-#    '3A' : 'CA',
-#    '3B' : 'CB',
-#    '3C' : 'CC',
-
-#    '4A' : 'DA',
-#    '4B' : 'DB',
-#    '4C' : 'DC',
-
-#    '5A' : 'EA',
-#    '5B' : 'EB',
-#    '5C' : 'EC',
-
-#   '6A' : 'FA',
-#    '6B' : 'FB',
-#   '6C' : 'FC',  
     }
 #  %%
 data.rename(columns=column_mapping, inplace=True)    
 # %%
-regressionFormula_2 = "np.log(Aessessment_Val) ~ np.log(living_area)+np.log(legal_acreage)+np.log(effective_age)+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+NEWBERRY+WALDO+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision+A+B+D+E+F"
-regressionFormula_3 = "np.log(Aessessment_Val) ~ np.log(living_area)+np.log(legal_acreage)+np.log(1-(effective_age/100))+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+NEWBERRY+WALDO+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision+A+B+D+E+F"
+regressionFormula_2 = "np.log(Assessmeent_Val) ~ np.log(living_area)+np.log(legal_acreage)+np.log(percent_good)+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+NEWBERRY+WALDO+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision+A+B+D+E+F"
 # %%
 from sklearn.model_selection import train_test_split
 train_data, test_data = train_test_split(data, test_size=0.2, random_state=42)
@@ -247,13 +225,13 @@ regresult.summary()
 # %%
 predictions = test_data.copy()
 # %%
-predictions['predicted_log_Aessessment_Val'] = regresult.predict(predictions)
+predictions['predicted_log_Assessmeent_Val'] = regresult.predict(predictions)
 # %%
-predictions['predicted_Aessessment_Val'] = np.exp(predictions['predicted_log_Aessessment_Val'])
+predictions['predicted_Assessmeent_Val'] = np.exp(predictions['predicted_log_Assessmeent_Val'])
 # %%
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-actual_values = predictions['Aessessment_Val']
-predicted_values = predictions['predicted_Aessessment_Val']
+actual_values = predictions['Assessmeent_Val']
+predicted_values = predictions['predicted_Assessmeent_Val']
 # %%
 # Calculate performance metrics
 mae = mean_absolute_error(actual_values, predicted_values)
@@ -272,44 +250,44 @@ print(f"R-squared: {r2}")
 print(f"PRD: {PRD_table}")
 print(f"COD: {COD_table}")
 print(f"PRB: {PRB_table}")
-print(f"weightedMeme: {wm}")
+print(f"weightedMean: {wm}")
 print(f"averageDevitation: {ad}")
+# %%
+# I can't figure out how to do this k fold validation thing with my formula so I'm just going to use the sklearn regression thing
+from sklearn.linear_model import LinearRegression
+data['legal_acreage'] = np.log(data['legal_acreage'])
+data['Assessmeent_Val'] = np.log(data['Assessmeent_Val'])
+data['living_area'] = np.log(data['living_area'])
+data['percent_good'] = np.log(data['percent_good'])
+X = data.drop(['Assessmeent_Val'], axis=1)
+y = data['Assessmeent_Val']
+# %%
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state = 42)
+# %%
+reg = LinearRegression()
+# %%
+reg.fit(X_train, y_train)
+print(reg.score(X_test, y_test))
+# %%
+from sklearn.model_selection import RepeatedKFold, cross_val_score
+rkf = RepeatedKFold(n_splits=10, n_repeats=3, random_state=1)
+scores = cross_val_score(reg, X, y, cv=rkf, scoring='neg_mean_squared_error')
+print("Mean Squared Error scores for each fold:")
+print(-scores)
+mean_mse = np.mean(-scores)
+print("Mean MSE:", mean_mse)
+print("Standard Deviation of MSE:", np.std(-scores))
+mean_mse_adjusted = np.exp(mean_mse)
+print("AdjustedMSE",mean_mse_adjusted)
 # %%
 ## Everything after this is me just messing with other ways of doing this and evaluating factors and such
 '''
 # %%
-data_copy = sm.add_constant(data)
-#data_copy = data_copy.select_dtypes(include=[np.number])
-# %%
-vif_data = pd.DataFrame()
-vif_data["feature"] = data_copy.columns
-vif_data["VIF"] = [vif(data_copy.values, i)
-                   for i in range(data_copy.shape[1])]
-# %%
-print(vif_data)
-# %%
-data_numeric = data.apply(lambda x: x.astype(int) if x.dtype == 'bool' else x)
-# %%
-regressionFormula_3 = "np.log(Aessessment_Val) ~ np.log(living_area * imprv_det_quality_cd)+np.log(legal_acreage)+np.log(effective_age)+in_subdivision"
+regressionFormula_3 = "np.log(Assessmeent_Val) ~ np.log(living_area * imprv_det_quality_cd)+np.log(legal_acreage)+np.log(effective_age)+in_subdivision"
 # %%
 data_numeric_reduced = data_numeric.drop(columns=['ST_JOHNS','SUWANNEE', 'B'])
 data_copy = sm.add_constant(data_numeric_reduced)
 # %%
 value_counts = result['B'].value_counts()
 print(value_counts)
-# %%
-from sklearn.model_selection import train_test_split
-X = result.drop(['Aessessment_Val'], axis=1)
-y = result['Aessessment_Val']
-# %%
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-# %%
-from sklearn.linear_model import LinearRegression
-# %%
-reg = LinearRegression()
-# %%
-reg.fit(X_train, y_train)
-# %%
-reg.score(X_test, y_test)
-# %%
 '''
