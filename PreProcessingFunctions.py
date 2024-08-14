@@ -1,8 +1,6 @@
 # Import libraries
 import pandas as pd
-
-data_path = 'Data/dp20.csv'
-market_area_path = 'Data/normalizedMAs.csv'
+import numpy as np
 
 # Load the data
 def load_data(data_path, market_area_path):
@@ -18,8 +16,8 @@ def preprocess_sale_data(sale_data):
 
 # Preprocess the Market Area data: remove null values and extraneous data and ensures string format for merge with sale data
 def preprocess_market_areas(market_areas):
-    market_areas = market_areas[['prop_id', 'MA', 'Cluster ID']]
-    market_areas.dropna(inplace=True)
+    market_areas = market_areas[['prop_id', 'MA', 'Cluster ID']].copy()
+    market_areas.dropna()
     market_areas = market_areas[market_areas['MA'] != '<Null>']
     market_areas = market_areas[market_areas['prop_id'] != '<Null>'] 
     market_areas['Market_Cluster_ID'] = market_areas['MA'].astype(str) + '_' + market_areas['Cluster ID'].astype(str)
@@ -45,12 +43,12 @@ def rename_columns(result):
     column_mapping = {
         'HIGH SPRINGS' : 'HIGH_SPRINGS',
         "ST. JOHN'S" : 'ST_JOHNS',
-        '1.0' : 'A',
-        '2.0' : 'B',
-        '3.0' : 'C',
-        '4.0' : 'D',
-        '5.0' : 'E',
-        '6.0' : 'F'
+        1.0 : 'A',
+        2.0 : 'B',
+        3.0 : 'C',
+        4.0 : 'D',
+        5.0 : 'E',
+        6.0 : 'F'
     }
     result.rename(columns=column_mapping, inplace=True)
     return result
@@ -62,6 +60,14 @@ def add_features(result):
     data = result.drop(columns=['abs_subdv_cd', 'MA', 'Cluster ID', 'sl_price', 'Total_MISC_Val', 'effective_age'])
     return data
 
+# log both sides
+def standardize(data):
+    data['legal_acreage'] = np.log(data['legal_acreage'])
+    data['Assessment_Val'] = np.log(data['Assessment_Val'])
+    data['living_area'] = np.log(data['living_area'])
+    data['percent_good'] = np.log(data['percent_good'])
+    return data
+
 # Final combined function
 def preprocess_data(data_path, market_areas_path):
     sale_data, market_areas = load_data(data_path, market_areas_path)
@@ -71,5 +77,6 @@ def preprocess_data(data_path, market_areas_path):
     result = encode_categorical_features(result)
     result = rename_columns(result)
     data = add_features(result)
+    data = standardize(data)
     data.columns = data.columns.astype(str)
     return data

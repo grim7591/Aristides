@@ -1,11 +1,19 @@
-from PreProcessingFunctions import preprocess_data, load_data, preprocess_market_areas
-import pandas as pd
+from RegressionOne import run_regression
+from PreProcessingFunctions import preprocess_data
 
-preprocess_data('Data/dp20.csv','Data/normalizedMAs.csv')
+data_path = 'Data/dp20.csv'
+market_areas_path = 'Data/normalizedMAs.csv'
 
-# Preprocess the data
-sale_data, market_areas =load_data('Data/dp20.csv','Data/normalizedMAs.csv')
+data = preprocess_data(data_path, market_areas_path)
 
-print(market_areas)
+formula = """
+Assessment_Val ~ living_area + legal_acreage + percent_good +
+ALACHUA + ARCHER + GAINESVILLE + HAWTHORNE + HIGH_SPRINGS + NEWBERRY + 
+WALDO + Springtree_B + HighSprings_A + MidtownEast_C + swNewberry_B + 
+MidtownEast_A + swNewberry_A + MidtownEast_B + HighSprings_F + WaldoRural_C +
+Springtree_A + Tioga_B + Tioga_A + swNewberry_C + MidtownEast_D + HighSprings_E +
+MidtownEast_E + HighSprings_D + Springtree_C + WaldoRural_A + WaldoRural_B + 
+HighSprings_C + MidtownEast_F + in_subdivision + A + B + D + E + F
+"""
 
-processedMAs = preprocess_market_areas(market_areas)
+run_regression(data,formula)
