@@ -280,14 +280,3 @@ print("Standard Deviation of MSE:", np.std(-scores))
 mean_mse_adjusted = np.exp(mean_mse)
 print("AdjustedMSE",mean_mse_adjusted)
 # %%
-## Everything after this is me just messing with other ways of doing this and evaluating factors and such
-'''
-# %%
-regressionFormula_3 = "np.log(Assessmeent_Val) ~ np.log(living_area * imprv_det_quality_cd)+np.log(legal_acreage)+np.log(effective_age)+in_subdivision"
-# %%
-data_numeric_reduced = data_numeric.drop(columns=['ST_JOHNS','SUWANNEE', 'B'])
-data_copy = sm.add_constant(data_numeric_reduced)
-# %%
-value_counts = result['B'].value_counts()
-print(value_counts)
-'''
