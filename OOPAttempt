@@ -1,0 +1,91 @@
+import pandas as pd
+import statsmodels.formula.api as smf
+from sklearn.model_selection import train_test_split
+
+class DataProcessor:
+    def __init__(self, sale_data_path, market_area_path):
+        self.sale_data_path = sale_data_path
+        self.market_area_path = market_area_path
+        self.sale_data = None
+        self.market_areas = None
+
+    def load_data(self):
+        self.sale_data = pd.read_csv(self.sale_data_path)
+        self.market_areas = pd.read_csv(self.market_area_path)
+        
+    def preprocess_market_areas(self):
+        self.market_areas = self.market_areas[['prop_id', 'MA', 'Cluster ID']]
+        self.market_areas.dropna(inplace=True)
+        self.market_areas = self.market_areas[self.market_areas['MA'] != '<Null>']
+        self.market_areas = self.market_areas[self.market_areas['prop_id'] != '<Null>'] 
+        self.market_areas['Market_Cluster_ID'] = self.market_areas['MA'].astype(str) + '_' + self.market_areas['Cluster ID'].astype(str)
+        self.market_areas['prop_id'] = self.market_areas['prop_id'].astype(str)
+        self.market_areas['Market_Cluster_ID'] = self.market_areas['Market_Cluster_ID'].astype(str)
+        
+    def preprocess_sale_data(self):
+        self.sale_data['Assessment_Val'] = .85 * (self.sale_data['sl_price'] - (self.sale_data['Total_MISC_Val'] / .85))
+        self.sale_data['prop_id'] = self.sale_data['prop_id'].astype(str)
+        
+    def merge_data(self):
+        self.data = pd.merge(self.sale_data, self.market_areas, how='inner', on='prop_id')
+        self.data.dropna(inplace=True)
+        
+    def encode_categorical_features(self):
+        self.data = self.data.join(pd.get_dummies(self.data.imprv_det_quality_cd)).drop(['imprv_det_quality_cd'], axis=1)
+        self.data = self.data.join(pd.get_dummies(self.data.tax_area_description)).drop(['tax_area_description'], axis=1)
+        self.data = self.data.join(pd.get_dummies(self.data.Market_Cluster_ID)).drop(['Market_Cluster_ID'], axis=1)
+        
+    def rename_columns(self):
+        column_mapping = {
+            'HIGH SPRINGS': 'HIGH_SPRINGS',
+            "ST. JOHN'S": 'ST_JOHNS',
+            '1.0': 'A',
+            '2.0': 'B',
+            '3.0': 'C',
+            '4.0': 'D',
+            '5.0': 'E',
+            '6.0': 'F'
+        }
+        self.data.rename(columns=column_mapping, inplace=True)
+        
+    def add_features(self):
+        self.data['in_subdivision'] = self.data['abs_subdv_cd'].apply(lambda x: True if x > 0 else False)
+        self.data['percent_good'] = 1 - (self.data['effective_age'] / 100)
+        self.data = self.data.drop(columns=['abs_subdv_cd', 'MA', 'Cluster ID', 'sl_price', 'Total_MISC_Val', 'effective_age'])
+        
+    def preprocess(self):
+        self.load_data()
+        self.preprocess_market_areas()
+        self.preprocess_sale_data()
+        self.merge_data()
+        self.encode_categorical_features()
+        self.rename_columns()
+        self.add_features()
+        return self.data
+
+
+class RegressionModel:
+    def __init__(self, data):
+        self.data = data
+    
+    def run_regression(self, formula, test_size=0.2, random_state=42):
+        train_data, test_data = train_test_split(self.data, test_size=test_size, random_state=random_state)
+        regresult = smf.ols(formula=formula, data=train_data).fit()
+        print(regresult.summary())
+        return regresult
+
+
+if __name__ == "__main__":
+    sale_data_path = 'Data/dp20.csv'
+    market_area_path = 'Data/normalizedMAs.csv'
+    
+    # Create a DataProcessor object and preprocess the data
+    processor = DataProcessor(sale_data_path, market_area_path)
+    processed_data = processor.preprocess()
+    
+    # Define your regression formula
+    regressionFormula_2 = "np.log(Assessment_Val) ~ np.log(living_area)+np.log(legal_acreage)+np.log(percent_good)+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+NEWBERRY+WALDO+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision+A+B+D+E+F"
+    
+    # Create a RegressionModel object and run the regression
+    model = RegressionModel(processed_data)
+    regresult = model.run_regression(regressionFormula_2)

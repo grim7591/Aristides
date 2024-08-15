@@ -1,3 +1,10 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+from matplotlib import pyplot as plt
+import seaborn as sns
 #----------------------------------
 # Mass appraisal functions
 #----------------------------------
