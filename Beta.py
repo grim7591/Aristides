@@ -12,7 +12,7 @@ market_areas = pd.read_csv('Data/normalizedMAs.csv')
 sale_data = pd.read_csv("Data/dp20.csv")
 # %%
 market_areas = market_areas[['prop_id', 'MA', 'Cluster ID']]
-sale_data['Assessmeent_Val'] =.85 * (sale_data['sl_price'] - (sale_data['Total_MISC_Val']/.85))
+sale_data['Assessment_Val'] =.85 * (sale_data['sl_price'] - (sale_data['Total_MISC_Val']/.85))
 # %%
 market_areas.dropna(inplace=True)
 # %%
@@ -103,7 +103,7 @@ def PRD(pred, sp):
             sp   (pandas.Series): Series of sale prices
             
         Returns:
-            price related differential (numpy.float64): Statistic for measuring assessment regressivity
+            price related differential (numpy.float64): Statistic for measuring Assessment regressivity
             
     '''
     meanRatio = (pred / sp).mean()
@@ -215,7 +215,7 @@ column_mapping = {
 #  %%
 data.rename(columns=column_mapping, inplace=True)    
 # %%
-regressionFormula_2 = "np.log(Assessmeent_Val) ~ np.log(living_area)+np.log(legal_acreage)+np.log(percent_good)+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+NEWBERRY+WALDO+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision+A+B+D+E+F"
+regressionFormula_2 = "np.log(Assessment_Val) ~ np.log(living_area)+np.log(legal_acreage)+np.log(percent_good)+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+NEWBERRY+WALDO+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision+A+B+D+E+F"
 # %%
 from sklearn.model_selection import train_test_split
 train_data, test_data = train_test_split(data, test_size=0.2, random_state=42)
@@ -225,13 +225,13 @@ regresult.summary()
 # %%
 predictions = test_data.copy()
 # %%
-predictions['predicted_log_Assessmeent_Val'] = regresult.predict(predictions)
+predictions['predicted_log_Assessment_Val'] = regresult.predict(predictions)
 # %%
-predictions['predicted_Assessmeent_Val'] = np.exp(predictions['predicted_log_Assessmeent_Val'])
+predictions['predicted_Assessment_Val'] = np.exp(predictions['predicted_log_Assessment_Val'])
 # %%
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-actual_values = predictions['Assessmeent_Val']
-predicted_values = predictions['predicted_Assessmeent_Val']
+actual_values = predictions['Assessment_Val']
+predicted_values = predictions['predicted_Assessment_Val']
 # %%
 # Calculate performance metrics
 mae = mean_absolute_error(actual_values, predicted_values)
@@ -256,11 +256,11 @@ print(f"averageDevitation: {ad}")
 # I can't figure out how to do this k fold validation thing with my formula so I'm just going to use the sklearn regression thing
 from sklearn.linear_model import LinearRegression
 data['legal_acreage'] = np.log(data['legal_acreage'])
-data['Assessmeent_Val'] = np.log(data['Assessmeent_Val'])
+data['Assessment_Val'] = np.log(data['Assessment_Val'])
 data['living_area'] = np.log(data['living_area'])
 data['percent_good'] = np.log(data['percent_good'])
-X = data.drop(['Assessmeent_Val'], axis=1)
-y = data['Assessmeent_Val']
+X = data.drop(['Assessment_Val'], axis=1)
+y = data['Assessment_Val']
 # %%
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state = 42)
 # %%
@@ -279,4 +279,48 @@ print("Mean MSE:", mean_mse)
 print("Standard Deviation of MSE:", np.std(-scores))
 mean_mse_adjusted = np.exp(mean_mse)
 print("AdjustedMSE",mean_mse_adjusted)
+# %%
+predictions['Residual_Val'] = predictions['Assessment_Val'] - predictions['predicted_Assessment_Val']
+predictions['AVResidual_Val'] = abs(predictions['Residual_Val'])
+Predictions_Plus_PIDS = pd.merge(predictions, sale_data, on=['Assessment_Val', 'living_area'], how='inner')
+print(Predictions_Plus_PIDS)
+# %%
+Predictions_Plus_PIDS.to_csv('Predictions_Plus_PIDS.csv', index=False)
+# %%
+Predictions_Just_PIDS = Predictions_Plus_PIDS['prop_id'].apply(lambda x: x + ',')
+Predictions_Just_PIDS.to_csv('OopsAllPIDS.csv', index=False)
+# %%
+market_values = pd.read_csv('Data/market_values.csv')
+market_values['prop_id'] = market_values['prop_id'].astype(str)
+Predictions_Plus_PIDS['prop_id'] = Predictions_Plus_PIDS['prop_id'].astype(str)
+DataforPowerBI = pd.merge(Predictions_Plus_PIDS, market_values, on='prop_id', how='inner')
+coordinates = pd.read_csv('Data/normalizedMAs.csv')
+coordinates = coordinates[['prop_id', 'CENTROID_X', 'CENTROID_Y']]
+DataforPowerBI['prop_id'] = DataforPowerBI['prop_id'].astype(str)
+coordinates['prop_id'] = coordinates['prop_id'].astype(str)
+Graphing_Data = pd.merge(DataforPowerBI, coordinates, on='prop_id', how='inner')
+Graphing_Data['MV_Residual_Val'] = Graphing_Data['Assessment_Val'] - Graphing_Data['market']
+Graphing_Data['MV_AVResidual_Val'] = abs(Graphing_Data['MV_Residual_Val'])
+print(Graphing_Data)
+Graphing_Data.to_csv('Graphing_Data.csv', index=False)
+# %%
+actual_values = Graphing_Data['Assessment_Val']
+predicted_values = Graphing_Data['market']
+mae = mean_absolute_error(actual_values, predicted_values)
+mse = mean_squared_error(actual_values, predicted_values)
+r2 = r2_score(actual_values, predicted_values)
+PRD_table = PRD(actual_values, predicted_values)
+COD_table = COD(actual_values, predicted_values)
+PRB_table = PRB(actual_values, predicted_values)
+wm = weightedMean(actual_values, predicted_values)
+ad = averageDeviation(actual_values, predicted_values)
+
+print(f"Mean Absolute Error: {mae}")
+print(f"Mean Squared Error: {mse}")
+print(f"R-squared: {r2}")
+print(f"PRD: {PRD_table}")
+print(f"COD: {COD_table}")
+print(f"PRB: {PRB_table}")
+print(f"weightedMean: {wm}")
+print(f"averageDevitation: {ad}")
 # %%
