@@ -9,7 +9,7 @@ import seaborn as sns
 from statsmodels.stats.outliers_influence import variance_inflation_factor as vif
 # %%
 market_areas = pd.read_csv('Data/normalizedMAs.csv')
-sale_data = pd.read_csv("Data/dp20.csv")
+sale_data = pd.read_csv("Data/dp22.csv")
 # %%
 market_areas = market_areas[['prop_id', 'MA', 'Cluster ID']]
 sale_data['Assessment_Val'] =.85 * (sale_data['sl_price'] - (sale_data['Total_MISC_Val']/.85))
@@ -205,12 +205,12 @@ data = result
 column_mapping = {
     'HIGH SPRINGS' : 'HIGH_SPRINGS',
     "ST. JOHN'S" : 'ST_JOHNS',
-    '1.0' : 'A',
-    '2.0' : 'B',
-    '3.0' : 'C',
-    '4.0' : 'D',
-    '5.0' : 'E',
-    '6.0' : 'F'
+    '1' : 'A',
+    '2' : 'B',
+    '3' : 'C',
+    '4' : 'D',
+    '5' : 'E',
+    '6' : 'F'
     }
 #  %%
 data.rename(columns=column_mapping, inplace=True)    
