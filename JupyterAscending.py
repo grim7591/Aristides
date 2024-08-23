@@ -45,7 +45,7 @@ result = result.drop(columns=['abs_subdv_cd', 'MA', 'Cluster ID', 'sl_price', 'T
 
 # Factor Engineer Percent Good based on effective age
 result['percent_good'] = 1- (result['effective_age']/100)
-result = result.drop(['effective_age'], axis =1)
+#result = result.drop(['effective_age'], axis =1)
 
 # Linearize the quality codes
 result['imprv_det_quality_cd'] = result['imprv_det_quality_cd'].replace({
@@ -203,4 +203,44 @@ for market_area, group in result.groupby('Market_Cluster_ID'):
 # Convert the list of results to a DataFrame for easy viewing
 stratified_ma_results_df = pd.DataFrame(stratified_ma_results)
 print(stratified_ma_results_df)
+# %% Stratify by quality code analysis
+# Create a list to store results
+stratified_qc_results = []
+
+for quality_code, group in result.groupby('imprv_det_quality_cd'):
+    group_predictions = group.copy()
+    group_predictions['predicted_log_Assessment_Val'] = regresult.predict(group)
+    group_predictions['predicted_Assessment_Val'] = np.exp(group_predictions['predicted_log_Assessment_Val'])
+    
+    # Calculate metrics for the group
+    actual_values = group_predictions['Assessment_Val']
+    predicted_values = group_predictions['predicted_Assessment_Val']
+    
+    mae = mean_absolute_error(actual_values, predicted_values)
+    mse = mean_squared_error(actual_values, predicted_values)
+    r2 = r2_score(actual_values, predicted_values)
+    PRD_table = PRD(actual_values, predicted_values)
+    COD_table = COD(actual_values, predicted_values)
+    PRB_table = PRB(actual_values, predicted_values)
+    wm = weightedMean(actual_values, predicted_values)
+    ad = averageDeviation(actual_values, predicted_values)
+    
+    count = group.shape[0]
+    
+    stratified_qc_results.append({
+        'Quality': quality_code,
+        'Count': count,
+        'MAE': mae,
+        'MSE': mse,
+        'R2': r2,
+        'PRD': PRD_table,
+        'COD': COD_table,
+        'PRB': PRB_table,
+        'Weighted Mean': wm,
+        'Average Deviation': ad
+    })
+    
+# Convert the list of results to a DataFrame for easy viewing
+stratified_qc_results_df = pd.DataFrame(stratified_qc_results)
+print(stratified_qc_results_df)
 # %%
