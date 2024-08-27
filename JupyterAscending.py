@@ -9,6 +9,7 @@ import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from IAAOFunctions import PRD, COD, PRB, weightedMean, averageDeviation
+from StrataAnalysisFunctions import StrataCaster
 
 # Load the data
 market_areas = pd.read_csv('Data/normalizedMAs.csv')
@@ -33,7 +34,7 @@ sale_data['Assessment_Val'] =.85 * (sale_data['sl_price'] - (sale_data['Total_MI
 # Factor engineer "landiness"
 avg_legal_acreage = (sale_data['legal_acreage']*43560).mean()
 sale_data['landiness'] = (sale_data['legal_acreage']*43560) / avg_legal_acreage
-sale_data = sale_data.drop('legal_acreage', axis = 1)
+
 
 # Merge the market area and sale data
 result = pd.merge(sale_data, market_areas, how='inner', on='prop_id')
@@ -124,123 +125,12 @@ print(f"COD: {COD_table}")
 print(f"PRB: {PRB_table}")
 print(f"weightedMean: {wm}")
 print(f"averageDevitation: {ad}")
-# %% Statification by tax area analysis
-# Create a list to store results
-stratified_ta_results = []
-
-# Stratify by tax area (replace 'tax_area_column' with the actual column name)
-for tax_area, group in result.groupby('tax_area_description'):
-    group_predictions = group.copy()
-    group_predictions['predicted_log_Assessment_Val'] = regresult.predict(group)
-    group_predictions['predicted_Assessment_Val'] = np.exp(group_predictions['predicted_log_Assessment_Val'])
-    
-    # Calculate metrics for the group
-    actual_values = group_predictions['Assessment_Val']
-    predicted_values = group_predictions['predicted_Assessment_Val']
-    
-    mae = mean_absolute_error(actual_values, predicted_values)
-    mse = mean_squared_error(actual_values, predicted_values)
-    r2 = r2_score(actual_values, predicted_values)
-    PRD_table = PRD(actual_values, predicted_values)
-    COD_table = COD(actual_values, predicted_values)
-    PRB_table = PRB(actual_values, predicted_values)
-    wm = weightedMean(actual_values, predicted_values)
-    ad = averageDeviation(actual_values, predicted_values)
-    
-    stratified_ta_results.append({
-        'tax_area': tax_area,
-        'MAE': mae,
-        'MSE': mse,
-        'R2': r2,
-        'PRD': PRD_table,
-        'COD': COD_table,
-        'PRB': PRB_table,
-        'Weighted Mean': wm,
-        'Average Deviation': ad
-    })
-    count = group.shape[0]
-# Convert the list of results to a DataFrame for easy viewing
-stratified_ta_results_df = pd.DataFrame(stratified_ta_results)
-print(stratified_ta_results_df)
-# %% Statification by market area analysis
-# Create a list to store results
-stratified_ma_results = []
-
-# Stratify by tax area (replace 'tax_area_column' with the actual column name)
-for market_area, group in result.groupby('Market_Cluster_ID'):
-    group_predictions = group.copy()
-    group_predictions['predicted_log_Assessment_Val'] = regresult.predict(group)
-    group_predictions['predicted_Assessment_Val'] = np.exp(group_predictions['predicted_log_Assessment_Val'])
-    
-    # Calculate metrics for the group
-    actual_values = group_predictions['Assessment_Val']
-    predicted_values = group_predictions['predicted_Assessment_Val']
-    
-    mae = mean_absolute_error(actual_values, predicted_values)
-    mse = mean_squared_error(actual_values, predicted_values)
-    r2 = r2_score(actual_values, predicted_values)
-    PRD_table = PRD(actual_values, predicted_values)
-    COD_table = COD(actual_values, predicted_values)
-    PRB_table = PRB(actual_values, predicted_values)
-    wm = weightedMean(actual_values, predicted_values)
-    ad = averageDeviation(actual_values, predicted_values)
-    
-    count = group.shape[0]
-    
-    stratified_ma_results.append({
-        'market area': market_area,
-        'Count': count,
-        'MAE': mae,
-        'MSE': mse,
-        'R2': r2,
-        'PRD': PRD_table,
-        'COD': COD_table,
-        'PRB': PRB_table,
-        'Weighted Mean': wm,
-        'Average Deviation': ad
-    })
-    
-# Convert the list of results to a DataFrame for easy viewing
-stratified_ma_results_df = pd.DataFrame(stratified_ma_results)
-print(stratified_ma_results_df)
-# %% Stratify by quality code analysis
-# Create a list to store results
-stratified_qc_results = []
-
-for quality_code, group in result.groupby('imprv_det_quality_cd'):
-    group_predictions = group.copy()
-    group_predictions['predicted_log_Assessment_Val'] = regresult.predict(group)
-    group_predictions['predicted_Assessment_Val'] = np.exp(group_predictions['predicted_log_Assessment_Val'])
-    
-    # Calculate metrics for the group
-    actual_values = group_predictions['Assessment_Val']
-    predicted_values = group_predictions['predicted_Assessment_Val']
-    
-    mae = mean_absolute_error(actual_values, predicted_values)
-    mse = mean_squared_error(actual_values, predicted_values)
-    r2 = r2_score(actual_values, predicted_values)
-    PRD_table = PRD(actual_values, predicted_values)
-    COD_table = COD(actual_values, predicted_values)
-    PRB_table = PRB(actual_values, predicted_values)
-    wm = weightedMean(actual_values, predicted_values)
-    ad = averageDeviation(actual_values, predicted_values)
-    
-    count = group.shape[0]
-    
-    stratified_qc_results.append({
-        'Quality': quality_code,
-        'Count': count,
-        'MAE': mae,
-        'MSE': mse,
-        'R2': r2,
-        'PRD': PRD_table,
-        'COD': COD_table,
-        'PRB': PRB_table,
-        'Weighted Mean': wm,
-        'Average Deviation': ad
-    })
-    
-# Convert the list of results to a DataFrame for easy viewing
-stratified_qc_results_df = pd.DataFrame(stratified_qc_results)
-print(stratified_qc_results_df)
+# %% 
+print(StrataCaster(result,regresult,'imprv_det_quality_cd'))
+# %%
+print(StrataCaster(
+    result,
+    regresult,
+    'Assessment_Val',
+))
 # %%

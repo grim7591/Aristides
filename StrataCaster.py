@@ -17,18 +17,30 @@ def StrataCaster(data, regression_result, factor, bins=None):
     Returns:
     - pd.DataFrame: A DataFrame containing the stratified results and metrics.
     """
+    # Create a dictionary of preset bins for specific factors
+    preset_bins = {
+        'Assessment_Val': (113195, 209869, 210000, 295636, 295835, 422355, 423131, 3962781, np.inf),
+        'living_area': (0, 999, 1000, 1499, 1500, 1999, 2000, 2499, 2500, 2999, 3000, 3499, 3500, np.inf),
+        # I could not find ranges for legal acreage in the DOR review but I've got it in here so I want to check it. I used ArcGIS to make quantiles
+        'legal_acreage': (0, 0.19, 0.20, 0.34, 0.35, np.inf), 
+        'effective_year_built': (1, 1969, 1970, 1979, 1980, 1989, 1990, 1999, 2000, 2009, 2010, np.inf) 
+    }
     # Create a list to store results
     stratified_results = []
-
+    
+    if bins is None:
+        if factor in preset_bins:
+            bins = preset_bins[factor]
+        else:
+            bins = None
+            
     if bins is not None:
         # If bins are provided, use them to create the groups
-        data['binned_factor'] = pd.cut(data[factor], bins=bins)
-        groupby_factor = 'binned_factor'
-    else:
-        groupby_factor = factor
+        data[factor] = pd.cut(data[factor], bins=bins, right=False)
+        
     
     # Stratify by the specified factor or binned factor
-    for factor_value, group in data.groupby(groupby_factor):
+    for factor_value, group in data.groupby(factor):
         group_predictions = group.copy()
         group_predictions['predicted_log_Assessment_Val'] = regression_result.predict(group)
         group_predictions['predicted_Assessment_Val'] = np.exp(group_predictions['predicted_log_Assessment_Val'])
