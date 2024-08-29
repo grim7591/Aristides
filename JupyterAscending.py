@@ -125,12 +125,56 @@ print(f"COD: {COD_table}")
 print(f"PRB: {PRB_table}")
 print(f"weightedMean: {wm}")
 print(f"averageDevitation: {ad}")
-# %% 
-print(StrataCaster(result,regresult,'imprv_det_quality_cd'))
 # %%
-print(StrataCaster(
+AVSA = StrataCaster(
     result,
     regresult,
     'Assessment_Val',
-))
+    None
+)
+LArSA = StrataCaster(
+    result,
+    regresult,
+    'living_area',
+    None
+)
+LAcSA = StrataCaster(
+    result,
+    regresult,
+    'legal_acreage',
+    None
+)
+QCSA = StrataCaster(
+    result,
+    regresult,
+    'imprv_det_quality_cd',
+    None
+)
+TASA = StrataCaster(
+    result,
+    regresult,
+    'tax_area_description',
+    None
+)
+MCSA = StrataCaster(
+    result,
+    regresult,
+    'Market_Cluster_ID',
+    None
+)
+# %%
+AVSA.to_csv('AVSA.csv', index=False)
+LArSA.to_csv('LArSA.csv', index=False)
+LAcSA.to_csv('LAcSA.csv', index=False)
+QCSA.to_csv('QCSA.csv', index=False)
+TASA.to_csv('TASA.csv', index=False)
+MCSA.to_csv('MCSA.csv', index=False)
+# %%
+StrataAnalysis = [AVSA, LArSA, LAcSA, QCSA, TASA, MCSA]
+sheet_names = ['AVSA', 'LArSA', 'LAcSA', 'QCSA', 'TASA', 'MCSA']
+
+# Create a Pandas Excel writer object
+with pd.ExcelWriter('StrataAnalysis.xlsx', engine='xlsxwriter') as writer:
+    for StrataAnalysis, sheet in zip(StrataAnalysis, sheet_names):
+        StrataAnalysis.to_excel(writer, sheet_name=sheet, index=False)
 # %%

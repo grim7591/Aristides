@@ -3,7 +3,7 @@ from IAAOFunctions import PRD, COD, PRB, weightedMean, averageDeviation
 import pandas as pd
 import numpy as np
 
-def StrataCaster(data, regression_result, factor, bins=None):
+def StrataCaster(data, regression_result, factor, bins):
     """
     Perform stratification on the given data by the specified factor and calculate metrics.
     
@@ -19,6 +19,7 @@ def StrataCaster(data, regression_result, factor, bins=None):
     """
     # Create a list to store results
     stratified_results = []
+    working_data = data.copy()
     
     # Create a dictionary of preset bins for specific factors
     preset_bins = {
@@ -33,13 +34,13 @@ def StrataCaster(data, regression_result, factor, bins=None):
             bins = preset_bins[factor]
             
     if bins is not None:
-        data['BinnedFactor'] = pd.cut(data[factor], bins=bins)
+        working_data['BinnedFactor'] = pd.cut(working_data[factor], bins=bins)
         grouping_factor = 'BinnedFactor'
     else:
         grouping_factor = factor
     
     # Stratify by the specified factor or binned factor
-    for factor_value, group in data.groupby(grouping_factor, observed=False):
+    for factor_value, group in working_data.groupby(grouping_factor):
         group_predictions = group.copy()
         group_predictions['predicted_log_Assessment_Val'] = regression_result.predict(group)
         group_predictions['predicted_Assessment_Val'] = np.exp(group_predictions['predicted_log_Assessment_Val'])
@@ -56,6 +57,9 @@ def StrataCaster(data, regression_result, factor, bins=None):
         PRB_table = PRB(actual_values, predicted_values)
         wm = weightedMean(actual_values, predicted_values)
         ad = averageDeviation(actual_values, predicted_values)
+        meanRatio = (predicted_values / actual_values).mean()
+        medianRatio = (predicted_values / actual_values).median()
+      
         
         count = group.shape[0]
         
@@ -70,7 +74,9 @@ def StrataCaster(data, regression_result, factor, bins=None):
             'COD': COD_table,
             'PRB': PRB_table,
             'Weighted Mean': wm,
-            'Average Deviation': ad
+            'Average Deviation': ad,
+            'Mean Ratio': meanRatio,
+            'Median Ratio': medianRatio
         })
     
     # Convert the list of results to a DataFrame for easy viewing
