@@ -186,4 +186,14 @@ sheet_names = ['AVSA', 'LArSA', 'LAcSA', 'QCSA', 'TASA', 'MCSA']
 with pd.ExcelWriter('Outputs/StrataAnalysis.xlsx', engine='xlsxwriter') as writer:
     for StrataAnalysis, sheet in zip(StrataAnalysis, sheet_names):
         StrataAnalysis.to_excel(writer, sheet_name=sheet, index=False)
+# %% Geospatial Analysis
+MapData = result.copy()
+MapData['predicted_log_Assessment_Val'] = regresult.predict(MapData)
+MapData['predicted_Assessment_Val'] = np.exp(MapData['predicted_log_Assessment_Val'])
+MapData['predicted_Market_Val'] = MapData['predicted_Assessment_Val'] + MapData['Total_MISC_Val']
+MapData['Market_Residual'] = MapData['predicted_Market_Val'] - MapData['sl_price']
+MapData['Assessment_Residual'] = MapData['predicted_Assessment_Val'] - MapData['Assessment_Val']
+MapData['AbsV_Market_Residual'] = MapData['Market_Residual'].abs()
+MapData['AbsV_Assessment_Residual'] = MapData['Assessment_Residual'].abs()
+MapData.to_csv('Outputs/MappingOutput1.csv', index=False)
 # %%
