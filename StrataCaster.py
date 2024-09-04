@@ -46,19 +46,22 @@ def StrataCaster(data, regression_result, factor, bins):
         group_predictions['predicted_Assessment_Val'] = np.exp(group_predictions['predicted_log_Assessment_Val'])
         
         # Calculate metrics for the group
-        actual_values = group_predictions['Assessment_Val']
-        predicted_values = group_predictions['predicted_Assessment_Val']
+        actual_values = group_predictions['sl_price']
+        predicted_values = group_predictions['predicted_Assessment_Val'] + group_predictions['Total_MISC_Val']
         
-        mae = mean_absolute_error(actual_values, predicted_values)
-        mse = mean_squared_error(actual_values, predicted_values)
-        r2 = r2_score(actual_values, predicted_values)
-        PRD_table = PRD(actual_values, predicted_values)
-        COD_table = COD(actual_values, predicted_values)
-        PRB_table = PRB(actual_values, predicted_values)
-        wm = weightedMean(actual_values, predicted_values)
-        ad = averageDeviation(actual_values, predicted_values)
+        # Test predictions on perfromance metrics
+        mae = mean_absolute_error(predicted_values, actual_values)
+        #mse = mean_squared_error(actual_values, predicted_values)
+        #r2 = r2_score(actual_values, predicted_values)
+        PRD_table = PRD(predicted_values,actual_values)
+        COD_table = COD(predicted_values,actual_values)
+        PRB_table = PRB(predicted_values,actual_values)
+        wm = weightedMean(predicted_values,actual_values)
+        #ad = averageDeviation(actual_values, predicted_values)
         meanRatio = (predicted_values / actual_values).mean()
         medianRatio = (predicted_values / actual_values).median()
+        
+        
       
         
         count = group.shape[0]
@@ -68,13 +71,13 @@ def StrataCaster(data, regression_result, factor, bins):
             factor: factor_value,
             'Count': count,
             'MAE': mae,
-            'MSE': mse,
+            #'MSE': mse,
             'R2': r2,
             'PRD': PRD_table,
             'COD': COD_table,
             'PRB': PRB_table,
             'Weighted Mean': wm,
-            'Average Deviation': ad,
+            #'Average Deviation': ad,
             'Mean Ratio': meanRatio,
             'Median Ratio': medianRatio
         })

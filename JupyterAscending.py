@@ -42,7 +42,7 @@ result.dropna(inplace=True)
 
 # Make subdivision code a binary variable
 result['in_subdivision'] = result['abs_subdv_cd'].apply(lambda x: True if x > 0 else False)
-result = result.drop(columns=['abs_subdv_cd', 'MA', 'Cluster ID', 'sl_price', 'Total_MISC_Val'])
+result = result.drop(columns=['abs_subdv_cd', 'MA', 'Cluster ID'])
 
 # Factor Engineer Percent Good based on effective age
 result['percent_good'] = 1- (result['effective_age']/100)
@@ -73,7 +73,8 @@ result.rename(columns=column_mapping, inplace=True)
 result.columns = result.columns.astype(str)
 # %% Run some regression with logs in the formula
 regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area)+np.log(landiness)+np.log(percent_good)+np.log(imprv_det_quality_cd)+np.log(total_porch_area+1)+np.log(total_garage_area+1)+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+NEWBERRY+WALDO+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision"
-train_data, test_data = train_test_split(result, test_size=0.2, random_state=42)
+#regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area)+np.log(landiness)+np.log(percent_good)+np.log(imprv_det_quality_cd)+np.log(total_porch_area+1)+np.log(total_garage_area+1)+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision"
+train_data, test_data = train_test_split(result, test_size=0.2, random_state=43)
 regresult = smf.ols(formula=regressionFormula, data=train_data).fit()
 regresult.summary()
 # %% Run some regression with the values logged beforehand for testing/sanity purposes (commented out)
@@ -104,27 +105,35 @@ regresult.summary()
 predictions = test_data.copy()
 predictions['predicted_log_Assessment_Val'] = regresult.predict(predictions)
 predictions['predicted_Assessment_Val'] = np.exp(predictions['predicted_log_Assessment_Val'])
-actual_values = predictions['Assessment_Val']
-predicted_values = predictions['predicted_Assessment_Val']
+actual_values = predictions['sl_price']
+predicted_values = predictions['predicted_Assessment_Val'] + predictions ['Total_MISC_Val']
+predicted_values_mae = predictions['predicted_Assessment_Val']
+actual_values_mae = predictions['Assessment_Val']
 
 # Test predictions on perfromance metrics
-mae = mean_absolute_error(actual_values, predicted_values)
-mse = mean_squared_error(actual_values, predicted_values)
-r2 = r2_score(actual_values, predicted_values)
-PRD_table = PRD(actual_values, predicted_values)
-COD_table = COD(actual_values, predicted_values)
-PRB_table = PRB(actual_values, predicted_values)
-wm = weightedMean(actual_values, predicted_values)
-ad = averageDeviation(actual_values, predicted_values)
+mae = mean_absolute_error(predicted_values, actual_values)
+mae_2 = mean_absolute_error(predicted_values_mae, actual_values_mae)
+#mse = mean_squared_error(actual_values, predicted_values)
+#r2 = r2_score(actual_values, predicted_values)
+PRD_table = PRD(predicted_values,actual_values)
+COD_table = COD(predicted_values,actual_values)
+PRB_table = PRB(predicted_values,actual_values)
+wm = weightedMean(predicted_values,actual_values)
+#ad = averageDeviation(actual_values, predicted_values)
+meanRatio = (predicted_values / actual_values).mean()
+medianRatio = (predicted_values / actual_values).median()
 
 print(f"Mean Absolute Error: {mae}")
-print(f"Mean Squared Error: {mse}")
-print(f"R-squared: {r2}")
+print(f"Mean Absolute Error_2: {mae_2}")
+#print(f"Mean Squared Error: {mse}")
+#print(f"R-squared: {r2}")
 print(f"PRD: {PRD_table}")
 print(f"COD: {COD_table}")
 print(f"PRB: {PRB_table}")
 print(f"weightedMean: {wm}")
-print(f"averageDevitation: {ad}")
+#print(f"averageDevitation: {ad}")
+print(f"meanRatio: {meanRatio}")
+print(f"medianRatio: {medianRatio}")
 # %%
 AVSA = StrataCaster(
     result,
