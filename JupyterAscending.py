@@ -16,7 +16,7 @@ market_areas = pd.read_csv('Data/normalizedMAs.csv')
 sale_data = pd.read_csv("Data/dp22.csv")
 
 # Clean the market area and sale data
-market_areas = market_areas[['prop_id', 'MA', 'Cluster ID', 'CENTROID_X', 'CENTROID_Y']]
+market_areas = market_areas[['prop_id', 'MA', 'Cluster ID', 'CENTROID_X', 'CENTROID_Y', 'geo_id']]
 market_areas.dropna(inplace=True)
 market_areas = market_areas[market_areas['MA'] != '<Null>']
 market_areas = market_areas[market_areas['prop_id'] != '<Null>']
