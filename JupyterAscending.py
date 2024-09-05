@@ -9,14 +9,14 @@ import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from IAAOFunctions import PRD, COD, PRB, weightedMean, averageDeviation
-from StrataAnalysisFunctions import StrataCaster
+import StrataCaster
 
 # Load the data
 market_areas = pd.read_csv('Data/normalizedMAs.csv')
 sale_data = pd.read_csv("Data/dp22.csv")
 
 # Clean the market area and sale data
-market_areas = market_areas[['prop_id', 'MA', 'Cluster ID']]
+market_areas = market_areas[['prop_id', 'MA', 'Cluster ID', 'CENTROID_X', 'CENTROID_Y']]
 market_areas.dropna(inplace=True)
 market_areas = market_areas[market_areas['MA'] != '<Null>']
 market_areas = market_areas[market_areas['prop_id'] != '<Null>']
@@ -193,7 +193,9 @@ MapData['predicted_Assessment_Val'] = np.exp(MapData['predicted_log_Assessment_V
 MapData['predicted_Market_Val'] = MapData['predicted_Assessment_Val'] + MapData['Total_MISC_Val']
 MapData['Market_Residual'] = MapData['predicted_Market_Val'] - MapData['sl_price']
 MapData['Assessment_Residual'] = MapData['predicted_Assessment_Val'] - MapData['Assessment_Val']
+MapData['Market_Residual'] = pd.to_numeric(MapData['Market_Residual'], errors='coerce')
+MapData['Assessment_Residual'] = pd.to_numeric(MapData['Assessment_Residual'], errors='coerce')
 MapData['AbsV_Market_Residual'] = MapData['Market_Residual'].abs()
 MapData['AbsV_Assessment_Residual'] = MapData['Assessment_Residual'].abs()
-MapData.to_csv('Outputs/MappingOutput1.csv', index=False)
+MapData['sale_ratio'] = MapData['predicted_Market_Val'] / MapData['sl_price']
 # %%

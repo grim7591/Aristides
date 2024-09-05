@@ -25,7 +25,7 @@
             <meta name="viewport" content="width=device-width,
                 initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
             <style>
-                #map_2417bf11dcd3c29c11c7692d8f994adc {
+                #map_19d707d36c490af40ce992bfb9273521 {
                     position: relative;
                     width: 100.0%;
                     height: 100.0%;
@@ -39,18 +39,18 @@
 <body>
     
     
-            <div class="folium-map" id="map_2417bf11dcd3c29c11c7692d8f994adc" ></div>
+            <div class="folium-map" id="map_19d707d36c490af40ce992bfb9273521" ></div>
         
 </body>
 <script>
     
     
-            var map_2417bf11dcd3c29c11c7692d8f994adc = L.map(
-                "map_2417bf11dcd3c29c11c7692d8f994adc",
+            var map_19d707d36c490af40ce992bfb9273521 = L.map(
+                "map_19d707d36c490af40ce992bfb9273521",
                 {
-                    center: [45.5236, -122.675],
+                    center: [-82.4510871282799, 29.687657628862972],
                     crs: L.CRS.EPSG3857,
-                    zoom: 10,
+                    zoom: 12,
                     zoomControl: true,
                     preferCanvas: false,
                 }
@@ -60,13 +60,16 @@
 
         
     
-            var tile_layer_1fb310dde379cb1ab6c499dc04f25d3a = L.tileLayer(
-                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-                {"attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors", "detectRetina": false, "maxNativeZoom": 19, "maxZoom": 19, "minZoom": 0, "noWrap": false, "opacity": 1, "subdomains": "abc", "tms": false}
+            var tile_layer_371098e750fcf34e03c7f3d1508b34ba = L.tileLayer(
+                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                {"attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"https://carto.com/attributions\"\u003eCARTO\u003c/a\u003e", "detectRetina": false, "maxNativeZoom": 20, "maxZoom": 20, "minZoom": 0, "noWrap": false, "opacity": 1, "subdomains": "abcd", "tms": false}
             );
         
     
-            tile_layer_1fb310dde379cb1ab6c499dc04f25d3a.addTo(map_2417bf11dcd3c29c11c7692d8f994adc);
+            tile_layer_371098e750fcf34e03c7f3d1508b34ba.addTo(map_19d707d36c490af40ce992bfb9273521);
+        
+    
+            tile_layer_371098e750fcf34e03c7f3d1508b34ba.addTo(map_19d707d36c490af40ce992bfb9273521);
         
 </script>
 </html>
