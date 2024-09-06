@@ -9,11 +9,12 @@ import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from IAAOFunctions import PRD, COD, PRB, weightedMean, averageDeviation
-import StrataCaster
+from StrataCaster import StrataCaster
+from PlotPlotter import PlotPlotter
 
 # Load the data
 market_areas = pd.read_csv('Data/normalizedMAs.csv')
-sale_data = pd.read_csv("Data/dp22.csv")
+sale_data = pd.read_csv("Data/dp24.csv")
 
 # Clean the market area and sale data
 market_areas = market_areas[['prop_id', 'MA', 'Cluster ID', 'CENTROID_X', 'CENTROID_Y', 'geo_id']]
@@ -40,9 +41,11 @@ sale_data['landiness'] = (sale_data['legal_acreage']*43560) / avg_legal_acreage
 result = pd.merge(sale_data, market_areas, how='inner', on='prop_id')
 result.dropna(inplace=True)
 
-# Make subdivision code a binary variable
+# Make subdivision code and townhousery binary variables
 result['in_subdivision'] = result['abs_subdv_cd'].apply(lambda x: True if x > 0 else False)
 result = result.drop(columns=['abs_subdv_cd', 'MA', 'Cluster ID'])
+result['is_townhouse'] = result['imprv_type_cd'].apply(lambda x: True if x == '300' else False)
+result['is_tiny'] = result['living_area'].apply(lambda x: True if x < 1000 else False)
 
 # Factor Engineer Percent Good based on effective age
 result['percent_good'] = 1- (result['effective_age']/100)
@@ -72,7 +75,7 @@ result.rename(columns=column_mapping, inplace=True)
 # Ensure that all column names are strings
 result.columns = result.columns.astype(str)
 # %% Run some regression with logs in the formula
-regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area)+np.log(landiness)+np.log(percent_good)+np.log(imprv_det_quality_cd)+np.log(total_porch_area+1)+np.log(total_garage_area+1)+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+NEWBERRY+WALDO+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision"
+regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area)+np.log(landiness)+np.log(percent_good)+np.log(imprv_det_quality_cd)+np.log(total_porch_area+1)+np.log(total_garage_area+1)+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+NEWBERRY+WALDO+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision+is_townhouse+np.log(1+(sum_us_area/living_area))+is_tiny"
 #regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area)+np.log(landiness)+np.log(percent_good)+np.log(imprv_det_quality_cd)+np.log(total_porch_area+1)+np.log(total_garage_area+1)+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision"
 train_data, test_data = train_test_split(result, test_size=0.2, random_state=43)
 regresult = smf.ols(formula=regressionFormula, data=train_data).fit()
@@ -198,4 +201,28 @@ MapData['Assessment_Residual'] = pd.to_numeric(MapData['Assessment_Residual'], e
 MapData['AbsV_Market_Residual'] = MapData['Market_Residual'].abs()
 MapData['AbsV_Assessment_Residual'] = MapData['Assessment_Residual'].abs()
 MapData['sale_ratio'] = MapData['predicted_Market_Val'] / MapData['sl_price']
+# %%
+PlotPlotter(MapData, 'HighSprings_A')
+PlotPlotter(MapData, 'HighSprings_B')
+PlotPlotter(MapData, 'HighSprings_C')
+PlotPlotter(MapData, 'HighSprings_D')
+PlotPlotter(MapData, 'HighSprings_E')
+PlotPlotter(MapData, 'HighSprings_F')
+PlotPlotter(MapData, 'Springtree_A')
+PlotPlotter(MapData, 'Springtree_B')
+PlotPlotter(MapData, 'Springtree_C')
+PlotPlotter(MapData, 'MidtownEast_A')
+PlotPlotter(MapData, 'MidtownEast_B')
+PlotPlotter(MapData, 'MidtownEast_C')
+PlotPlotter(MapData, 'MidtownEast_D')
+PlotPlotter(MapData, 'MidtownEast_E')
+PlotPlotter(MapData, 'swNewberry_A')
+PlotPlotter(MapData, 'swNewberry_B')
+PlotPlotter(MapData, 'swNewberry_C')
+PlotPlotter(MapData, 'WaldoRural_A')
+PlotPlotter(MapData, 'WaldoRural_B')
+PlotPlotter(MapData, 'WaldoRural_C')
+PlotPlotter(MapData, 'Tioga_A')
+PlotPlotter(MapData, 'Tioga_B')
+PlotPlotter(MapData, '300')
 # %%

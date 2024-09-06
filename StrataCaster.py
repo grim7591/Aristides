@@ -72,7 +72,7 @@ def StrataCaster(data, regression_result, factor, bins):
             'Count': count,
             'MAE': mae,
             #'MSE': mse,
-            'R2': r2,
+            #'R2': r2,
             'PRD': PRD_table,
             'COD': COD_table,
             'PRB': PRB_table,

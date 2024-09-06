@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_c09a15cd1544fc2140fa3a9ac6e42cd4 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+        
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_c09a15cd1544fc2140fa3a9ac6e42cd4" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_c09a15cd1544fc2140fa3a9ac6e42cd4 = L.map(
+                "map_c09a15cd1544fc2140fa3a9ac6e42cd4",
+                {
+                    center: [0.0, 0.0],
+                    crs: L.CRS.EPSG3857,
+                    zoom: 1,
+                    zoomControl: true,
+                    preferCanvas: false,
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_43a0c1823b5ce4d9ee25739eeb94551b = L.tileLayer(
+                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                {"attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"https://carto.com/attributions\"\u003eCARTO\u003c/a\u003e", "detectRetina": false, "maxNativeZoom": 20, "maxZoom": 20, "minZoom": 0, "noWrap": false, "opacity": 1, "subdomains": "abcd", "tms": false}
+            );
+        
+    
+            tile_layer_43a0c1823b5ce4d9ee25739eeb94551b.addTo(map_c09a15cd1544fc2140fa3a9ac6e42cd4);
+        
+    
+            var circle_marker_536535bcc7daea0426f3f4748b9c0c79 = L.circleMarker(
+                [29.676122, -82.363512],
+                {"bubblingMouseEvents": true, "color": "gray", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "gray", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1, "radius": 6, "stroke": false, "weight": 3}
+            ).addTo(map_c09a15cd1544fc2140fa3a9ac6e42cd4);
+        
+    
+        var popup_62154162bcaf89d81300c3b1f15ebe1b = L.popup({"maxWidth": 2650});
+
+        
+            
+                var html_9230a48f911b5422a83cb57b1b1adf90 = $(`<div id="html_9230a48f911b5422a83cb57b1b1adf90" style="width: 100.0%; height: 100.0%;"><a href="https://qpublic.schneidercorp.com/Application.aspx?AppID=1081&LayerID=26490&PageTypeID=4&PageID=10770&Q=336226735&KeyValue=06088-005-009" target="_blank">Link to Site</a></div>`)[0];
+                popup_62154162bcaf89d81300c3b1f15ebe1b.setContent(html_9230a48f911b5422a83cb57b1b1adf90);
+            
+        
+
+        circle_marker_536535bcc7daea0426f3f4748b9c0c79.bindPopup(popup_62154162bcaf89d81300c3b1f15ebe1b)
+        ;
+
+        
+    
+    
+            var circle_marker_6ff25c6f6612205f34cbfa0fd020db2d = L.circleMarker(
+                [29.675193, -82.361747],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1, "radius": 6, "stroke": false, "weight": 3}
+            ).addTo(map_c09a15cd1544fc2140fa3a9ac6e42cd4);
+        
+    
+        var popup_5f657afb9805f4e71715a9b43a3f447b = L.popup({"maxWidth": 2650});
+
+        
+            
+                var html_667144dd652a99b23a06fe9d31346775 = $(`<div id="html_667144dd652a99b23a06fe9d31346775" style="width: 100.0%; height: 100.0%;"><a href="https://qpublic.schneidercorp.com/Application.aspx?AppID=1081&LayerID=26490&PageTypeID=4&PageID=10770&Q=336226735&KeyValue=06088-005-018" target="_blank">Link to Site</a></div>`)[0];
+                popup_5f657afb9805f4e71715a9b43a3f447b.setContent(html_667144dd652a99b23a06fe9d31346775);
+            
+        
+
+        circle_marker_6ff25c6f6612205f34cbfa0fd020db2d.bindPopup(popup_5f657afb9805f4e71715a9b43a3f447b)
+        ;
+
+        
+    
+    
+            var circle_marker_889278b584faf73497585eeeada99ed5 = L.circleMarker(
+                [29.673651, -82.356101],
+                {"bubblingMouseEvents": true, "color": "gray", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "gray", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1, "radius": 6, "stroke": false, "weight": 3}
+            ).addTo(map_c09a15cd1544fc2140fa3a9ac6e42cd4);
+        
+    
+        var popup_b714f5516c616715ac759202bb8148b0 = L.popup({"maxWidth": 2650});
+
+        
+            
+                var html_4e1275a711794d12bdc5312e01a1fcec = $(`<div id="html_4e1275a711794d12bdc5312e01a1fcec" style="width: 100.0%; height: 100.0%;"><a href="https://qpublic.schneidercorp.com/Application.aspx?AppID=1081&LayerID=26490&PageTypeID=4&PageID=10770&Q=336226735&KeyValue=06427-020-022" target="_blank">Link to Site</a></div>`)[0];
+                popup_b714f5516c616715ac759202bb8148b0.setContent(html_4e1275a711794d12bdc5312e01a1fcec);
+            
+        
+
+        circle_marker_889278b584faf73497585eeeada99ed5.bindPopup(popup_b714f5516c616715ac759202bb8148b0)
+        ;
+
+        
+    
+    
+            var circle_marker_fe638dff1cf6a5eb2d14d894893ae958 = L.circleMarker(
+                [29.675237, -82.3552],
+                {"bubblingMouseEvents": true, "color": "gray", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "gray", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1, "radius": 6, "stroke": false, "weight": 3}
+            ).addTo(map_c09a15cd1544fc2140fa3a9ac6e42cd4);
+        
+    
+        var popup_917fe3b716213ba9ece3a75319caa139 = L.popup({"maxWidth": 2650});
+
+        
+            
+                var html_3d76b550fa2f2e7e6da4c70e1a748494 = $(`<div id="html_3d76b550fa2f2e7e6da4c70e1a748494" style="width: 100.0%; height: 100.0%;"><a href="https://qpublic.schneidercorp.com/Application.aspx?AppID=1081&LayerID=26490&PageTypeID=4&PageID=10770&Q=336226735&KeyValue=09003-005-045" target="_blank">Link to Site</a></div>`)[0];
+                popup_917fe3b716213ba9ece3a75319caa139.setContent(html_3d76b550fa2f2e7e6da4c70e1a748494);
+            
+        
+
+        circle_marker_fe638dff1cf6a5eb2d14d894893ae958.bindPopup(popup_917fe3b716213ba9ece3a75319caa139)
+        ;
+
+        
+    
+    
+            var circle_marker_5dc5224bd231d091ba8346d1373660e2 = L.circleMarker(
+                [29.674478, -82.354564],
+                {"bubblingMouseEvents": true, "color": "gray", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "gray", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1, "radius": 6, "stroke": false, "weight": 3}
+            ).addTo(map_c09a15cd1544fc2140fa3a9ac6e42cd4);
+        
+    
+        var popup_fdd96b5ad4f4ccbda7f90fa12545d8a5 = L.popup({"maxWidth": 2650});
+
+        
+            
+                var html_4eb00c148459f7bd8d03d5eaea6eb723 = $(`<div id="html_4eb00c148459f7bd8d03d5eaea6eb723" style="width: 100.0%; height: 100.0%;"><a href="https://qpublic.schneidercorp.com/Application.aspx?AppID=1081&LayerID=26490&PageTypeID=4&PageID=10770&Q=336226735&KeyValue=09003-005-047" target="_blank">Link to Site</a></div>`)[0];
+                popup_fdd96b5ad4f4ccbda7f90fa12545d8a5.setContent(html_4eb00c148459f7bd8d03d5eaea6eb723);
+            
+        
+
+        circle_marker_5dc5224bd231d091ba8346d1373660e2.bindPopup(popup_fdd96b5ad4f4ccbda7f90fa12545d8a5)
+        ;
+
+        
+    
+</script>
+</html>
