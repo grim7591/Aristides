@@ -75,8 +75,14 @@ result.rename(columns=column_mapping, inplace=True)
 # Ensure that all column names are strings
 result.columns = result.columns.astype(str)
 # %% Run some regression with logs in the formula
+# Regression formula with tax areas and townhosue stuff
+
 regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area)+np.log(landiness)+np.log(percent_good)+np.log(imprv_det_quality_cd)+np.log(total_porch_area+1)+np.log(total_garage_area+1)+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+NEWBERRY+WALDO+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision+is_townhouse+np.log(1+(sum_us_area/living_area))+is_tiny"
-#regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area)+np.log(landiness)+np.log(percent_good)+np.log(imprv_det_quality_cd)+np.log(total_porch_area+1)+np.log(total_garage_area+1)+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision"
+
+# Regression formula without tax areas or any of the towhouse stuff.
+
+#regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area)+np.log(landiness)+np.log(percent_good)+np.log(imprv_det_quality_cd)+np.log(total_porch_area+1)+np.log(total_garage_area+1)+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision+np.log(1+(sum_us_area/living_area))"
+
 train_data, test_data = train_test_split(result, test_size=0.2, random_state=43)
 regresult = smf.ols(formula=regressionFormula, data=train_data).fit()
 regresult.summary()
@@ -201,6 +207,7 @@ MapData['Assessment_Residual'] = pd.to_numeric(MapData['Assessment_Residual'], e
 MapData['AbsV_Market_Residual'] = MapData['Market_Residual'].abs()
 MapData['AbsV_Assessment_Residual'] = MapData['Assessment_Residual'].abs()
 MapData['sale_ratio'] = MapData['predicted_Market_Val'] / MapData['sl_price']
+MapData.to_csv('MapData.csv', index=False)
 # %%
 PlotPlotter(MapData, 'HighSprings_A')
 PlotPlotter(MapData, 'HighSprings_B')
