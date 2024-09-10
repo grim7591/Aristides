@@ -14,7 +14,7 @@ from PlotPlotter import PlotPlotter
 
 # Load the data
 market_areas = pd.read_csv('Data/normalizedMAs.csv')
-sale_data = pd.read_csv("Data/dp24.csv")
+sale_data = pd.read_csv("Data/dp26.csv")
 
 # Clean the market area and sale data
 market_areas = market_areas[['prop_id', 'MA', 'Cluster ID', 'CENTROID_X', 'CENTROID_Y', 'geo_id']]
@@ -64,11 +64,16 @@ result['imprv_det_quality_cd'] = result['imprv_det_quality_cd'].replace({
 # Create dummy variables for non-numeric data, changing the name to data so I can use the un-dummied table later
 result = result.join(pd.get_dummies(result.tax_area_description))
 result = result.join(pd.get_dummies(result.Market_Cluster_ID))
+#result = result.join(pd.get_dummies(result.imprv_type_cd))
 
 # Rename columns that will act up in Python
 column_mapping = {
     'HIGH SPRINGS' : 'HIGH_SPRINGS',
     "ST. JOHN'S" : 'ST_JOHNS',
+    #'100' : 'SFH',
+    #'200' : 'SFR - MFG',
+    ##'300' : 'Zero_Lot'
+    #''
     }
 result.rename(columns=column_mapping, inplace=True)
 
@@ -77,11 +82,21 @@ result.columns = result.columns.astype(str)
 # %% Run some regression with logs in the formula
 # Regression formula with tax areas and townhosue stuff
 
-regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area)+np.log(landiness)+np.log(percent_good)+np.log(imprv_det_quality_cd)+np.log(total_porch_area+1)+np.log(total_garage_area+1)+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+NEWBERRY+WALDO+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision+is_townhouse+np.log(1+(sum_us_area/living_area))+is_tiny"
+#regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area)+np.log(landiness)+np.log(percent_good)+np.log(imprv_det_quality_cd)+np.log(total_porch_area+1)+np.log(total_garage_area+1)+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+NEWBERRY+WALDO+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision+is_townhouse+np.log(1+(sum_us_area/living_area))+is_tiny"
 
 # Regression formula without tax areas or any of the towhouse stuff.
 
+#regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area)+np.log(landiness)+np.log(percent_good)+np.log(imprv_det_quality_cd)+np.log(total_porch_area+1)+np.log(total_garage_area+1)+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision+np.log(1+(sum_us_area/living_area))+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+NEWBERRY+WALDO"
+
+# Without tax areas
+
 #regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area)+np.log(landiness)+np.log(percent_good)+np.log(imprv_det_quality_cd)+np.log(total_porch_area+1)+np.log(total_garage_area+1)+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision+np.log(1+(sum_us_area/living_area))"
+
+# With tax areas without upstairs living area
+regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area)+np.log(landiness)+np.log(percent_good)+np.log(imprv_det_quality_cd)+np.log(total_porch_area+1)+np.log(total_garage_area+1)+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+LACROSSE+MICANOPY+NEWBERRY+WALDO"
+
+# With tax areas without upstairs living area
+#regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area)+np.log(landiness)+np.log(percent_good)+np.log(imprv_det_quality_cd)+np.log(total_porch_area+1)+np.log(total_garage_area+1)+in_subdivision+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+LACROSSE+MICANOPY+NEWBERRY+WALDO"
 
 train_data, test_data = train_test_split(result, test_size=0.2, random_state=43)
 regresult = smf.ols(formula=regressionFormula, data=train_data).fit()
@@ -143,7 +158,7 @@ print(f"weightedMean: {wm}")
 #print(f"averageDevitation: {ad}")
 print(f"meanRatio: {meanRatio}")
 print(f"medianRatio: {medianRatio}")
-# %%
+# %% Strata Analysis
 AVSA = StrataCaster(
     result,
     regresult,
@@ -180,14 +195,14 @@ MCSA = StrataCaster(
     'Market_Cluster_ID',
     None
 )
-# %%
+# %% Strata Analysis output
 AVSA.to_csv('Outputs/AVSA.csv', index=False)
 LArSA.to_csv('Outputs/LArSA.csv', index=False)
 LAcSA.to_csv('Outputs/LAcSA.csv', index=False)
 QCSA.to_csv('Outputs/QCSA.csv', index=False)
 TASA.to_csv('Outputs/TASA.csv', index=False)
 MCSA.to_csv('Outputs/MCSA.csv', index=False)
-# %%
+# %%Strata Analysis output part 2
 StrataAnalysis = [AVSA, LArSA, LAcSA, QCSA, TASA, MCSA]
 sheet_names = ['AVSA', 'LArSA', 'LAcSA', 'QCSA', 'TASA', 'MCSA']
 
