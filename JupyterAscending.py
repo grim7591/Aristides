@@ -15,6 +15,8 @@ from PlotPlotter import PlotPlotter
 # Load the data
 market_areas = pd.read_csv('Data/normalizedMAs.csv')
 sale_data = pd.read_csv("Data/dp26.csv")
+New_Sub_Market = pd.read_csv('HighSprings_B1.csv')
+#market_areas_2 = pd.read_csv("Data/NewSubMarkets.csv")
 
 # Clean the market area and sale data
 market_areas = market_areas[['prop_id', 'MA', 'Cluster ID', 'CENTROID_X', 'CENTROID_Y', 'geo_id']]
@@ -41,6 +43,7 @@ sale_data['landiness'] = (sale_data['legal_acreage']*43560) / avg_legal_acreage
 result = pd.merge(sale_data, market_areas, how='inner', on='prop_id')
 result.dropna(inplace=True)
 
+
 # Make subdivision code and townhousery binary variables
 result['in_subdivision'] = result['abs_subdv_cd'].apply(lambda x: True if x > 0 else False)
 result = result.drop(columns=['abs_subdv_cd', 'MA', 'Cluster ID'])
@@ -50,7 +53,16 @@ result['is_tiny'] = result['living_area'].apply(lambda x: True if x < 1000 else 
 # Factor Engineer Percent Good based on effective age
 result['percent_good'] = 1- (result['effective_age']/100)
 #result = result.drop(['effective_age'], axis =1)
+'''
+# Market Area Adjustments
+market_areas_2['prop_id'] = market_areas_2['prop_id'].astype(str)
+result = pd.merge(result, market_areas_2, how='left', on='prop_id')
 
+result['Market_Cluster_ID_2'] = result['Market_Cluster_ID']
+
+result.loc[result['Cluster ID'] == 1, 'Market_Cluster_ID_2'] = 'HighSprings_B1'
+result.loc[result['Cluster ID'] == 2, 'Market_Cluster_ID_2'] = 'HighSprings_B2'
+'''
 # Linearize the quality codes
 result['imprv_det_quality_cd'] = result['imprv_det_quality_cd'].replace({
     1: 0.75,
@@ -61,8 +73,13 @@ result['imprv_det_quality_cd'] = result['imprv_det_quality_cd'].replace({
     6: 1.70
 })
 
+result['prop_id'] = result['prop_id'].astype(str)
+New_Sub_Market['prop_id'] = New_Sub_Market['prop_id'].astype(str)
+result.loc[result['prop_id'].isin(New_Sub_Market['prop_id']), 'Market_Cluster_ID'] = 'HighSprings_B1'
+
 # Create dummy variables for non-numeric data, changing the name to data so I can use the un-dummied table later
 result = result.join(pd.get_dummies(result.tax_area_description))
+#result = result.join(pd.get_dummies(result.Market_Cluster_ID))
 result = result.join(pd.get_dummies(result.Market_Cluster_ID))
 #result = result.join(pd.get_dummies(result.imprv_type_cd))
 
@@ -93,9 +110,11 @@ result.columns = result.columns.astype(str)
 #regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area)+np.log(landiness)+np.log(percent_good)+np.log(imprv_det_quality_cd)+np.log(total_porch_area+1)+np.log(total_garage_area+1)+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision+np.log(1+(sum_us_area/living_area))"
 
 # With tax areas without upstairs living area
-regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area)+np.log(landiness)+np.log(percent_good)+np.log(imprv_det_quality_cd)+np.log(total_porch_area+1)+np.log(total_garage_area+1)+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+LACROSSE+MICANOPY+NEWBERRY+WALDO"
+regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area)+np.log(landiness)+np.log(percent_good)+np.log(imprv_det_quality_cd)+np.log(total_porch_area+1)+np.log(total_garage_area+1)+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+LACROSSE+MICANOPY+NEWBERRY+WALDO+HighSprings_B1"
 
-# With tax areas without upstairs living area
+#3regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area)+np.log(landiness)+np.log(percent_good)+np.log(imprv_det_quality_cd)+np.log(total_porch_area+1)+np.log(total_garage_area+1)+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+LACROSSE+MICANOPY+NEWBERRY+WALDO+HighSprings_B2"
+
+# With tax areas without upstairs living area without tax areas
 #regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area)+np.log(landiness)+np.log(percent_good)+np.log(imprv_det_quality_cd)+np.log(total_porch_area+1)+np.log(total_garage_area+1)+in_subdivision+ALACHUA+ARCHER+GAINESVILLE+HAWTHORNE+HIGH_SPRINGS+LACROSSE+MICANOPY+NEWBERRY+WALDO"
 
 train_data, test_data = train_test_split(result, test_size=0.2, random_state=43)
