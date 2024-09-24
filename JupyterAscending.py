@@ -106,6 +106,9 @@ Thornebrooke['prop_id'] = Thornebrooke['prop_id'].astype(str)
 #Rural_UI['prop_id'] = Rural_UI['prop_id'].astype(str)
 result.loc[result['prop_id'].isin(Haile['prop_id']), 'Market_Cluster_ID'] = 'Haile'
 result.loc[result['tax_area_description'] == 'LACROSSE', 'Market_Cluster_ID'] = 'Lacrosse'
+result.loc[result['Market_Cluster_ID'] == 'HighSprings_D', 'Market_Cluster_ID'] = 'High_Springs_Main'
+result.loc[result['Market_Cluster_ID'] == 'MidtownEast_E', 'Market_Cluster_ID'] = 'MidtownEast_C'
+result.loc[result['Market_Cluster_ID'] == 'MidtownEast_F', 'Market_Cluster_ID'] = 'MidtownEast_B'
 result.loc[result['prop_id'].isin(High_Springs_Main['prop_id']), 'Market_Cluster_ID'] = 'High_Springs_Main'
 result.loc[result['prop_id'].isin(Turkey_Creek['prop_id']), 'Market_Cluster_ID'] = 'Turkey_Creek'
 result.loc[result['prop_id'].isin(Alachua_Main['prop_id']), 'Market_Cluster_ID'] = 'Alachua_Main'
@@ -154,7 +157,7 @@ result.columns = result.columns.astype(str)
 
 # With new submarkets
 
-regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area)+np.log(landiness)+np.log(percent_good)+np.log(imprv_det_quality_cd)+np.log(total_porch_area+1)+np.log(total_garage_area+1)+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+MidtownEast_E+HighSprings_D+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+MidtownEast_F+in_subdivision+West_Outer_Gainesville+Alachua_Main+High_Springs_Main+Haile+HighSprings_B+Lacrosse+West_of_Waldo_rd+Real_Tioga+Duck_Pond+Newmans_Lake+EastMidtownEastA+SouthNewmansLake+HighSpringsAGNV+Thornebrooke"
+regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area)+np.log(landiness)+np.log(percent_good)+np.log(imprv_det_quality_cd)+np.log(total_porch_area+1)+np.log(total_garage_area+1)+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+in_subdivision+West_Outer_Gainesville+Alachua_Main+High_Springs_Main+Haile+HighSprings_B+Lacrosse+West_of_Waldo_rd+Real_Tioga+Duck_Pond+Newmans_Lake+EastMidtownEastA+SouthNewmansLake+HighSpringsAGNV+Thornebrooke"
 
 train_data, test_data = train_test_split(result, test_size=0.2, random_state=43)
 regresult = smf.ols(formula=regressionFormula, data=train_data).fit()
