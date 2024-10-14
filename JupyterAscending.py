@@ -15,6 +15,7 @@ from PlotPlotter import PlotPlotter
 # Load the data
 market_areas = pd.read_csv('Data/normalizedMAs.csv')
 sale_data = pd.read_csv("Data/dp26.csv")
+
 Haile = pd.read_csv("Data/Haile.csv")
 High_Springs_Main = pd.read_csv("Data/High_Springs_Main.csv")
 Turkey_Creek = pd.read_csv("Data/Turkey_Creek.csv")
@@ -27,9 +28,13 @@ Real_Tioga = pd.read_csv("Data/Real_Tioga.csv")
 Duck_Pond = pd.read_csv("Data/DuckPond.csv")
 Newmans_Lake = pd.read_csv("Data/Newmans_Lake.csv")
 EastMidtownEastA = pd.read_csv("Data/EastMidtownEastA.csv")
-SouthNewmansLake = pd.read_csv("Data/SouthNewmansLake.csv")
 HighSpringsAGNV = pd.read_csv("Data/HighSpringsAGNV.csv")
 Thornebrooke = pd.read_csv("Data/Thornebrooke.csv")
+HSBUI = pd.read_csv("Data/HSBUI.csv")
+Golfview = pd.read_csv("Data/Golfview.csv")
+Lugano = pd.read_csv("Data/Lugano.csv")
+Archer = pd.read_csv("Data/Archer.csv")
+WildsPlantation = pd.read_csv("Data/WildsPlantation.csv")
 
 # Clean the market area and sale data
 market_areas = market_areas[['prop_id', 'MA', 'Cluster ID', 'CENTROID_X', 'CENTROID_Y', 'geo_id']]
@@ -88,6 +93,7 @@ result['imprv_det_quality_cd'] = result['imprv_det_quality_cd'].replace({
 
 # New Market Area subdivisions
 result['prop_id'] = result['prop_id'].astype(str)
+
 Haile['prop_id'] = Haile['prop_id'].astype(str)
 High_Springs_Main['prop_id'] = High_Springs_Main['prop_id'].astype(str)
 Turkey_Creek['prop_id'] = Turkey_Creek['prop_id'].astype(str)
@@ -99,16 +105,25 @@ Real_Tioga['prop_id'] = Real_Tioga['prop_id'].astype(str)
 Duck_Pond['prop_id'] = Duck_Pond['prop_id'].astype(str)
 Newmans_Lake['prop_id'] = Newmans_Lake['prop_id'].astype(str)
 EastMidtownEastA['prop_id'] = EastMidtownEastA['prop_id'].astype(str)
-SouthNewmansLake['prop_id'] = SouthNewmansLake['prop_id'].astype(str)
 HighSpringsAGNV['prop_id'] = HighSpringsAGNV['prop_id'].astype(str)
 Thornebrooke['prop_id'] = Thornebrooke['prop_id'].astype(str)
-
+HSBUI['prop_id'] = HSBUI['prop_id'].astype(str)
+Golfview['prop_id'] = Golfview['prop_id'].astype(str)
+Lugano['prop_id'] = Lugano['prop_id'].astype(str)
+Archer['prop_id'] = Archer['prop_id'].astype(str)
+WildsPlantation['prop_id'] = WildsPlantation['prop_id'].astype(str)
 #Rural_UI['prop_id'] = Rural_UI['prop_id'].astype(str)
 result.loc[result['prop_id'].isin(Haile['prop_id']), 'Market_Cluster_ID'] = 'Haile'
+result.loc[result['Market_Cluster_ID'] == 'WaldoRural_B', 'Market_Cluster_ID'] = 'HSBUI'
 result.loc[result['tax_area_description'] == 'LACROSSE', 'Market_Cluster_ID'] = 'Lacrosse'
+result.loc[result['tax_area_description'] == 'HAWTHORNE', 'Market_Cluster_ID'] = 'Hawthorne'
 result.loc[result['Market_Cluster_ID'] == 'HighSprings_D', 'Market_Cluster_ID'] = 'High_Springs_Main'
 result.loc[result['Market_Cluster_ID'] == 'MidtownEast_E', 'Market_Cluster_ID'] = 'MidtownEast_C'
 result.loc[result['Market_Cluster_ID'] == 'MidtownEast_F', 'Market_Cluster_ID'] = 'MidtownEast_B'
+result.loc[result['Market_Cluster_ID'] == 'HighSprings_C', 'Market_Cluster_ID'] = 'HSBUI'
+result.loc[result['Market_Cluster_ID'] == 'Springtree_C', 'Market_Cluster_ID'] = 'HSBUI'
+result.loc[result['Market_Cluster_ID'] == 'swNewberry_C', 'Market_Cluster_ID'] = 'HSBUI'
+result.loc[result['Market_Cluster_ID'] == 'WaldoRural_C', 'Market_Cluster_ID'] = 'HSBUI'
 result.loc[result['prop_id'].isin(High_Springs_Main['prop_id']), 'Market_Cluster_ID'] = 'High_Springs_Main'
 result.loc[result['prop_id'].isin(Turkey_Creek['prop_id']), 'Market_Cluster_ID'] = 'Turkey_Creek'
 result.loc[result['prop_id'].isin(Alachua_Main['prop_id']), 'Market_Cluster_ID'] = 'Alachua_Main'
@@ -119,10 +134,15 @@ result.loc[result['prop_id'].isin(Real_Tioga['prop_id']), 'Market_Cluster_ID'] =
 result.loc[result['prop_id'].isin(Duck_Pond['prop_id']), 'Market_Cluster_ID'] = 'Duck_Pond'
 result.loc[result['prop_id'].isin(Newmans_Lake['prop_id']), 'Market_Cluster_ID'] = 'Newmans_Lake'
 result.loc[result['prop_id'].isin(EastMidtownEastA['prop_id']), 'Market_Cluster_ID'] = 'EastMidtownEastA'
-result.loc[result['prop_id'].isin(SouthNewmansLake['prop_id']), 'Market_Cluster_ID'] = 'SouthNewmansLake'
 result.loc[result['prop_id'].isin(HighSpringsAGNV['prop_id']), 'Market_Cluster_ID'] = 'HighSpringsAGNV'
 result.loc[result['prop_id'].isin(Thornebrooke['prop_id']), 'Market_Cluster_ID'] = 'Thornebrooke'
+result.loc[result['prop_id'].isin(HSBUI['prop_id']), 'Market_Cluster_ID'] = 'HSBUI'
+result.loc[result['prop_id'].isin(Golfview['prop_id']), 'Market_Cluster_ID'] = 'Golfview'
+result.loc[result['prop_id'].isin(Lugano['prop_id']), 'Market_Cluster_ID'] = 'Lugano'
+result.loc[result['prop_id'].isin(Archer['prop_id']), 'Market_Cluster_ID'] = 'Archer'
+result.loc[result['prop_id'].isin(WildsPlantation['prop_id']), 'Market_Cluster_ID'] = 'WildsPlantation'
 #result.loc[result['prop_id'].isin(Rural_UI['prop_id']), 'Market_Cluster_ID'] = 'Rural_UI'
+
 
 # Create dummy variables for non-numeric data, changing the name to data so I can use the un-dummied table later
 result = result.join(pd.get_dummies(result.tax_area_description))
@@ -157,7 +177,7 @@ result.columns = result.columns.astype(str)
 
 # With new submarkets
 
-regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area)+np.log(landiness)+np.log(percent_good)+np.log(imprv_det_quality_cd)+np.log(total_porch_area+1)+np.log(total_garage_area+1)+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+WaldoRural_C+Springtree_A+Tioga_B+Tioga_A+swNewberry_C+MidtownEast_D+HighSprings_E+Springtree_C+WaldoRural_A+WaldoRural_B+HighSprings_C+in_subdivision+West_Outer_Gainesville+Alachua_Main+High_Springs_Main+Haile+HighSprings_B+Lacrosse+West_of_Waldo_rd+Real_Tioga+Duck_Pond+Newmans_Lake+EastMidtownEastA+SouthNewmansLake+HighSpringsAGNV+Thornebrooke"
+regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area)+np.log(landiness)+np.log(percent_good)+np.log(imprv_det_quality_cd)+np.log(total_porch_area+1)+np.log(total_garage_area+1)+Springtree_B+HighSprings_A+MidtownEast_C+swNewberry_B+MidtownEast_A+swNewberry_A+MidtownEast_B+HighSprings_F+Springtree_A+Tioga_B+Tioga_A+MidtownEast_D+HighSprings_E+WaldoRural_A+in_subdivision+West_Outer_Gainesville+Alachua_Main+High_Springs_Main+Haile+HighSprings_B+Lacrosse+West_of_Waldo_rd+Real_Tioga+Duck_Pond+Newmans_Lake+EastMidtownEastA+HighSpringsAGNV+Thornebrooke+Hawthorne+HSBUI+HighSprings_B+Golfview+Lugano+Archer+WildsPlantation"
 
 train_data, test_data = train_test_split(result, test_size=0.2, random_state=43)
 regresult = smf.ols(formula=regressionFormula, data=train_data).fit()

@@ -11,12 +11,13 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from IAAOFunctions import PRD, COD, PRB, weightedMean, averageDeviation
 from StrataCaster import StrataCaster
 from PlotPlotter import PlotPlotter
+import matplotlib.pyplot as plt
 
 # Load the data
 print("Loading data from CSV files...")
 # Load data from multiple CSV files
 market_areas = pd.read_csv('Data/normalizedMAs.csv')
-sale_data = pd.read_csv("Data/dp29.csv")
+sale_data = pd.read_csv("Data/dp30.csv")
 
 Haile = pd.read_csv("Data/Haile.csv")
 High_Springs_Main = pd.read_csv("Data/High_Springs_Main.csv")
@@ -37,6 +38,10 @@ Golfview = pd.read_csv("Data/Golfview.csv")
 Lugano = pd.read_csv("Data/Lugano.csv")
 Archer = pd.read_csv("Data/Archer.csv")
 WildsPlantation = pd.read_csv("Data/WildsPlantation.csv")
+Greystone = pd.read_csv("Data/Greystone.csv")
+Eagle_Point = pd.read_csv("Data/Eagle_Point.csv")
+Near_Haile = pd.read_csv("Data/Near_Haile.csv")
+Magnolia_Heights = pd.read_csv("Data/Magnolia_Heights.csv")
 
 # Clean the market area and sale data
 print("Cleaning market area and sale data...")
@@ -131,11 +136,15 @@ Golfview['prop_id'] = Golfview['prop_id'].astype(str)
 Lugano['prop_id'] = Lugano['prop_id'].astype(str)
 Archer['prop_id'] = Archer['prop_id'].astype(str)
 WildsPlantation['prop_id'] = WildsPlantation['prop_id'].astype(str)
+Greystone['prop_id'] = Greystone['prop_id'].astype(str)
+Eagle_Point['prop_id'] = Eagle_Point['prop_id'].astype(str)
+Near_Haile['prop_id'] = Near_Haile['prop_id'].astype(str)
+Magnolia_Heights['prop_id'] = Magnolia_Heights['prop_id'].astype(str)
 
 # Assign new Market Cluster IDs based on subdivision membership and tax area description
-result.loc[result['prop_id'].isin(Haile['prop_id']), 'Market_Cluster_ID'] = 'Haile'
+result.loc[result['prop_id'].isin(Haile['prop_id']), 'Market_Cluster_ID'] = 'HaileLike'
 result.loc[result['Market_Cluster_ID'] == 'WaldoRural_B', 'Market_Cluster_ID'] = 'HSBUI'
-result.loc[result['tax_area_description'] == 'LACROSSE', 'Market_Cluster_ID'] = 'Lacrosse'
+result.loc[result['tax_area_description'] == 'LACROSSE', 'Market_Cluster_ID'] = 'HSBUI'
 result.loc[result['tax_area_description'] == 'HAWTHORNE', 'Market_Cluster_ID'] = 'Hawthorne'
 result.loc[result['Market_Cluster_ID'] == 'HighSprings_D', 'Market_Cluster_ID'] = 'High_Springs_Main'
 result.loc[result['Market_Cluster_ID'] == 'MidtownEast_E', 'Market_Cluster_ID'] = 'MidtownEast_C'
@@ -144,6 +153,7 @@ result.loc[result['Market_Cluster_ID'] == 'HighSprings_C', 'Market_Cluster_ID'] 
 result.loc[result['Market_Cluster_ID'] == 'Springtree_C', 'Market_Cluster_ID'] = 'HSBUI'
 result.loc[result['Market_Cluster_ID'] == 'swNewberry_C', 'Market_Cluster_ID'] = 'HSBUI'
 result.loc[result['Market_Cluster_ID'] == 'WaldoRural_C', 'Market_Cluster_ID'] = 'HSBUI'
+result.loc[result['Market_Cluster_ID'] == 'HighSprings_E', 'Market_Cluster_ID'] = 'HSBUI'
 result.loc[result['prop_id'].isin(High_Springs_Main['prop_id']), 'Market_Cluster_ID'] = 'High_Springs_Main'
 result.loc[result['prop_id'].isin(Turkey_Creek['prop_id']), 'Market_Cluster_ID'] = 'Turkey_Creek'
 result.loc[result['prop_id'].isin(Alachua_Main['prop_id']), 'Market_Cluster_ID'] = 'Alachua_Main'
@@ -161,6 +171,10 @@ result.loc[result['prop_id'].isin(Golfview['prop_id']), 'Market_Cluster_ID'] = '
 result.loc[result['prop_id'].isin(Lugano['prop_id']), 'Market_Cluster_ID'] = 'Lugano'
 result.loc[result['prop_id'].isin(Archer['prop_id']), 'Market_Cluster_ID'] = 'Archer'
 result.loc[result['prop_id'].isin(WildsPlantation['prop_id']), 'Market_Cluster_ID'] = 'WildsPlantation'
+result.loc[result['prop_id'].isin(Greystone['prop_id']), 'Market_Cluster_ID'] = 'HaileLike'
+result.loc[result['prop_id'].isin(Eagle_Point['prop_id']), 'Market_Cluster_ID'] = 'HaileLike'
+result.loc[result['prop_id'].isin(Near_Haile['prop_id']), 'Market_Cluster_ID'] = 'HaileLike'
+result.loc[result['prop_id'].isin(Magnolia_Heights['prop_id']), 'Market_Cluster_ID'] = 'Magnolia_Heights'
 
 # Create dummy variables for non-numeric data
 print("Creating dummy variables...")
@@ -183,7 +197,7 @@ result.columns = result.columns.astype(str)
 # %% Run some regression with logs in the formula
 print("Running regression model...")
 # Regression formula with tax areas and townhouse-related variables
-regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area) + np.log(landiness) + np.log(percent_good) + np.log(imprv_det_quality_cd) + np.log(total_porch_area + 1) + np.log(total_garage_area + 1) + Springtree_B + HighSprings_A + MidtownEast_C + swNewberry_B + MidtownEast_A + swNewberry_A + MidtownEast_B + HighSprings_F + Springtree_A + Tioga_B + Tioga_A + MidtownEast_D + HighSprings_E + WaldoRural_A + in_subdivision + West_Outer_Gainesville + Alachua_Main + High_Springs_Main + Haile + HighSprings_B + Lacrosse + West_of_Waldo_rd + Real_Tioga + Duck_Pond + Newmans_Lake + EastMidtownEastA + HighSpringsAGNV + Thornebrooke + Hawthorne + HSBUI + HighSprings_B + Golfview + Lugano + Archer + WildsPlantation"
+regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area) + np.log(landiness) + np.log(percent_good) + np.log(imprv_det_quality_cd) + np.log(total_porch_area + 1) + np.log(total_garage_area + 1) + Springtree_B + HighSprings_A + MidtownEast_C + swNewberry_B + MidtownEast_A + swNewberry_A + MidtownEast_B + HighSprings_F + Springtree_A + Tioga_B + Tioga_A + MidtownEast_D + WaldoRural_A + in_subdivision + West_Outer_Gainesville + Alachua_Main + High_Springs_Main + HaileLike + HighSprings_B + Magnolia_Heights + West_of_Waldo_rd + Real_Tioga + Duck_Pond + Newmans_Lake + EastMidtownEastA + HighSpringsAGNV + Thornebrooke + Hawthorne + HSBUI + HighSprings_B + Golfview + Lugano + Archer + WildsPlantation"
 
 # Split data into training and test sets
 print("Splitting data into training and test sets...")
@@ -313,4 +327,101 @@ PlotPlotter(MapData, 'WaldoRural_C')
 PlotPlotter(MapData, 'Tioga_A')
 PlotPlotter(MapData, 'Tioga_B')
 PlotPlotter(MapData, '300')
+# %%
+# %%Filter rows with sales ratio above 0.95 or below 0.75
+outlier_sales_ratios = MapData[(MapData['sale_ratio'] > 0.95) | (MapData['sale_ratio'] < 0.75)]
+# %%
+# Group by Market_Cluster_ID and calculate the count and summary statistics
+grouped_outliers = outlier_sales_ratios.groupby('Market_Cluster_ID')['sale_ratio'].agg(['count', 'mean', 'std'])
+print(grouped_outliers)
+# %%
+grouped_results = MapData.groupby('Market_Cluster_ID')['sale_ratio'].agg(['count', 'mean', 'std'])
+print(grouped_results)
+# %%
+# Create bins for living area to segment by size
+# Use .loc to assign the living area bins to avoid SettingWithCopyWarning
+outlier_sales_ratios.loc[:, 'living_area_bins'] = pd.cut(outlier_sales_ratios['living_area'], 
+                                                         bins=[0, 1500, 3000, 4500, np.inf], 
+                                                         labels=['small', 'medium', 'large', 'very_large'])
+
+# Group by Market_Cluster_ID and living area bins
+# Update the groupby to include the observed parameter
+grouped_detailed = outlier_sales_ratios.groupby(['Market_Cluster_ID', 'living_area_bins'], observed=False)['sale_ratio'].agg(['count', 'mean', 'std'])
+
+print(grouped_detailed)
+# Output the groupby result to HTML for better viewing
+grouped_detailed.to_html('grouped_detailed.html')# %%
+# %%
+# Plot count of outlier sales ratios by Market_Cluster_ID
+plt.figure(figsize=(12, 8))
+sns.countplot(data=outlier_sales_ratios, x='Market_Cluster_ID', order=outlier_sales_ratios['Market_Cluster_ID'].value_counts().index)
+plt.xticks(rotation=90)
+plt.title('Count of Outlier Sales Ratios by Market Cluster ID')
+plt.ylabel('Count')
+plt.xlabel('Market Cluster ID')
+plt.tight_layout()
+plt.show()
+# %%
+# Boxplot of Sale Ratios by Market Cluster
+plt.figure(figsize=(14, 8))
+sns.boxplot(data=MapData, x='Market_Cluster_ID', y='sale_ratio')
+plt.xticks(rotation=90)
+plt.title('Sale Ratio Distribution by Market Cluster')
+plt.ylabel('Sale Ratio')
+plt.xlabel('Market Cluster ID')
+plt.tight_layout()
+plt.show()
+# %%
+# Boxplot of Sale Ratios by Market Cluster with DOR Limits
+plt.figure(figsize=(14, 8))
+sns.boxplot(data=MapData, x='Market_Cluster_ID', y='sale_ratio')
+plt.xticks(rotation=90)
+plt.ylim(0.3, 1.7)  # Set the y-axis limits to DOR's acceptable range
+plt.title('Sale Ratio Distribution by Market Cluster (DOR Limits)')
+plt.ylabel('Sale Ratio')
+plt.xlabel('Market Cluster ID')
+plt.tight_layout()
+plt.show()
+# %%
+# Residual Analysis by Market Cluster: Plot the residuals (Market_Residual) to see if any particular market cluster has consistently high residuals, indicating the model is struggling there.
+plt.figure(figsize=(14, 8))
+sns.boxplot(data=MapData, x='Market_Cluster_ID', y='Market_Residual')
+plt.xticks(rotation=90)
+plt.title('Market Residuals by Market Cluster')
+plt.ylabel('Market Residual')
+plt.xlabel('Market Cluster ID')
+plt.tight_layout()
+plt.show()
+# %%
+# Scatter Plot of Living Area vs. Sale Ratio: If you want to explore whether certain property characteristics (like living area) are contributing to the outliers, a scatter plot is helpful.
+plt.figure(figsize=(10, 6))
+sns.scatterplot(data=MapData, x='living_area', y='sale_ratio', hue='Market_Cluster_ID', alpha=0.7)
+plt.title('Living Area vs. Sale Ratio by Market Cluster')
+plt.ylabel('Sale Ratio')
+plt.xlabel('Living Area (sq ft)')
+plt.legend(loc='best', bbox_to_anchor=(1.05, 1))
+plt.tight_layout()
+plt.show()
+# %%
+# Scatter Plot of Living Area vs. Sale Ratio: If you want to explore whether certain property characteristics (like living area) are contributing to the outliers, a scatter plot is helpful.
+plt.figure(figsize=(10, 6))
+sns.scatterplot(data=outlier_sales_ratios, x='living_area', y='sale_ratio', hue='Market_Cluster_ID', alpha=0.7)
+plt.title('Living Area vs. Sale Ratio by Market Cluster')
+plt.ylabel('Sale Ratio')
+plt.xlabel('Living Area (sq ft)')
+plt.legend(loc='best', bbox_to_anchor=(1.05, 1))
+plt.tight_layout()
+plt.show()
+# %%
+# Count bar chart for each market cluster where sale_ratio is not between 0.3 and 1.7
+plt.figure(figsize=(14, 8))
+outliers = MapData[(MapData['sale_ratio'] < 0.3) | (MapData['sale_ratio'] > 1.7)]
+sns.countplot(data=outliers, x='Market_Cluster_ID', order=outliers['Market_Cluster_ID'].value_counts().index)
+plt.xticks(rotation=90)
+plt.yticks(ticks=np.arange(0, outliers['Market_Cluster_ID'].value_counts().max() + 1, 1))  # Set y-axis to whole numbers
+plt.title('Count of Sale Ratios Outside DOR Limits (0.3 - 1.7) by Market Cluster')
+plt.ylabel('Count')
+plt.xlabel('Market Cluster ID')
+plt.tight_layout()
+plt.show()
 # %%
