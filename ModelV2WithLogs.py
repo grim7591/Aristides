@@ -98,7 +98,7 @@ result['is_tiny'] = result['living_area'].apply(lambda x: True if x < 1000 else 
 # Factor Engineer Percent Good based on effective age
 print("Calculating percent good based on effective age...")
 # Calculate 'percent_good' as a factor of effective age
-result['percent_good'] = 1 - (result['effective_age'] / 100)
+result['percent_good'] = 1 - (result['effective_age'] + sum_obs / 100)
 
 # Linearize the quality codes
 print("Linearizing quality codes...")
