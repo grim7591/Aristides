@@ -10,7 +10,7 @@ import pandas as pd
 df = pd.read_csv('Data/errors.csv')
 
 # Filter the rows where sale_ratio is over 0.95 or under 0.75
-filtered_df = df[(df['sale_ratio'] > 0.95) | (df['sale_ratio'] < 0.75)]
+filtered_df = MapData[(MapData['sale_ratio'] > 1.05) | (df['sale_ratio'] < 0.65)]
 
 # Group by 'Market_Cluster_ID', count the occurrences, and sort in descending order
 counts = filtered_df.groupby('Market_Cluster_ID').size().sort_values(ascending=False)
