@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 print("Loading data from CSV files...")
 # Load data from multiple CSV files
 market_areas = pd.read_csv('Data/normalizedMAs.csv')
-sale_data = pd.read_csv("Data/dp30.csv")
+sale_data = pd.read_csv("Data/dp33.csv")
 
 Haile = pd.read_csv("Data/Haile.csv")
 High_Springs_Main = pd.read_csv("Data/High_Springs_Main.csv")
@@ -42,6 +42,7 @@ Greystone = pd.read_csv("Data/Greystone.csv")
 Eagle_Point = pd.read_csv("Data/Eagle_Point.csv")
 Near_Haile = pd.read_csv("Data/Near_Haile.csv")
 Magnolia_Heights = pd.read_csv("Data/Magnolia_Heights.csv")
+Buck_Bay = pd.read_csv("Data/Buck_Bay.csv")
 
 # Clean the market area and sale data
 print("Cleaning market area and sale data...")
@@ -95,11 +96,18 @@ result['is_townhouse'] = result['imprv_type_cd'].apply(lambda x: True if x == '3
 # Create a binary variable 'is_tiny' to indicate if living area is less than 1000 sq ft
 result['is_tiny'] = result['living_area'].apply(lambda x: True if x < 1000 else False)
 
+# Convert 'prop_id' to string for consistency across dataframes
+result['prop_id'] = result['prop_id'].astype(str)
+
 # Factor Engineer Percent Good based on effective age
 print("Calculating percent good based on effective age...")
 # Calculate 'percent_good' as a factor of effective age
-result['percent_good'] = 1 - (result['effective_age'] + sum_obs / 100)
+result['percent_good'] = 1 - (result['effective_age']/ 100)
 
+# Update the quality code for the property with prop_id 96615
+result.loc[result['prop_id'].isin(['96615']), 'imprv_det_quality_cd'] = 1
+
+result.loc[result['prop_id'].isin(['96411']), 'imprv_det_quality_cd'] = 2
 # Linearize the quality codes
 print("Linearizing quality codes...")
 # Replace quality codes with numerical values for linear regression
@@ -111,11 +119,8 @@ result['imprv_det_quality_cd'] = result['imprv_det_quality_cd'].replace({
     5: 1.40,
     6: 1.70
 })
-
 # New Market Area subdivisions
 print("Updating Market Cluster IDs for new subdivisions...")
-# Convert 'prop_id' to string for consistency across dataframes
-result['prop_id'] = result['prop_id'].astype(str)
 
 # Ensure 'prop_id' is a string for all subdivision dataframes
 Haile['prop_id'] = Haile['prop_id'].astype(str)
@@ -140,6 +145,7 @@ Greystone['prop_id'] = Greystone['prop_id'].astype(str)
 Eagle_Point['prop_id'] = Eagle_Point['prop_id'].astype(str)
 Near_Haile['prop_id'] = Near_Haile['prop_id'].astype(str)
 Magnolia_Heights['prop_id'] = Magnolia_Heights['prop_id'].astype(str)
+Buck_Bay['prop_id'] = Buck_Bay['prop_id'].astype(str)
 
 # Assign new Market Cluster IDs based on subdivision membership and tax area description
 result.loc[result['prop_id'].isin(Haile['prop_id']), 'Market_Cluster_ID'] = 'HaileLike'
@@ -175,6 +181,7 @@ result.loc[result['prop_id'].isin(Greystone['prop_id']), 'Market_Cluster_ID'] = 
 result.loc[result['prop_id'].isin(Eagle_Point['prop_id']), 'Market_Cluster_ID'] = 'HaileLike'
 result.loc[result['prop_id'].isin(Near_Haile['prop_id']), 'Market_Cluster_ID'] = 'HaileLike'
 result.loc[result['prop_id'].isin(Magnolia_Heights['prop_id']), 'Market_Cluster_ID'] = 'Magnolia_Heights'
+result.loc[result['prop_id'].isin(Buck_Bay['prop_id']), 'Market_Cluster_ID'] = 'Buck_Bay'
 
 # Create dummy variables for non-numeric data
 print("Creating dummy variables...")
@@ -191,13 +198,38 @@ column_mapping = {
 }
 result.rename(columns=column_mapping, inplace=True)
 
+# Add a binary column 'built_before_1974' to indicate if 'actual_year_built' is less than 1974
+result['built_before_1974'] = (result['actual_year_built'] < 1974).astype(int)
+
+# Create a binary variable for properties with 'actual_year_built' < 1994 and 'effective_year_built' <= 1994
+result['built_pre_1994_with_effective_le_1994'] = (
+    (result['actual_year_built'] < 1994) & (result['effective_year_built'] <= 1994)
+).astype(int)
+
+# Exclude properties built before 1994
+result = result[result['actual_year_built'] >= 1994]
+
+# Exclude properties with a quality code of 0.75 or 1.7
+result = result[~result['imprv_det_quality_cd'].isin([0.75, 1.7])]
+
+# Exclude properties with legal acreage above 2 acres
+result = result[result['legal_acreage'] <= 2]
+
+# Exclude properties where the sale price is outside 2 standard deviations from the mean
+sale_price_mean = result['sl_price'].mean()
+sale_price_std = result['sl_price'].std()
+result = result[(result['sl_price'] >= sale_price_mean - 2 * sale_price_std) & 
+                (result['sl_price'] <= sale_price_mean + 2 * sale_price_std)]
+
 # Ensure that all column names are strings
 result.columns = result.columns.astype(str)
 
 # %% Run some regression with logs in the formula
 print("Running regression model...")
 # Regression formula with tax areas and townhouse-related variables
-regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area) + np.log(landiness) + np.log(percent_good) + np.log(imprv_det_quality_cd) + np.log(total_porch_area + 1) + np.log(total_garage_area + 1) + Springtree_B + HighSprings_A + MidtownEast_C + swNewberry_B + MidtownEast_A + swNewberry_A + MidtownEast_B + HighSprings_F + Springtree_A + Tioga_B + Tioga_A + MidtownEast_D + WaldoRural_A + in_subdivision + West_Outer_Gainesville + Alachua_Main + High_Springs_Main + HaileLike + HighSprings_B + Magnolia_Heights + West_of_Waldo_rd + Real_Tioga + Duck_Pond + Newmans_Lake + EastMidtownEastA + HighSpringsAGNV + Thornebrooke + Hawthorne + HSBUI + HighSprings_B + Golfview + Lugano + Archer + WildsPlantation"
+regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area) + np.log(landiness) + np.log(percent_good) + np.log(imprv_det_quality_cd) + np.log(total_porch_area + 1) + np.log(total_garage_area + 1) + Springtree_B + HighSprings_A + MidtownEast_C + swNewberry_B + MidtownEast_A + swNewberry_A + MidtownEast_B + HighSprings_F + Springtree_A + Tioga_B + Tioga_A + MidtownEast_D + WaldoRural_A + West_Outer_Gainesville + Alachua_Main + High_Springs_Main + HaileLike + HighSprings_B + Magnolia_Heights + West_of_Waldo_rd + Real_Tioga + Duck_Pond + Newmans_Lake + EastMidtownEastA + HighSpringsAGNV + Thornebrooke + Hawthorne + HSBUI + HighSprings_B + Golfview + Lugano + Archer + WildsPlantation+Buck_Bay+in_subdivision"
+
+#built_before_1974+built_pre_1994_with_effective_le_1994"
 
 # Split data into training and test sets
 print("Splitting data into training and test sets...")
@@ -423,5 +455,52 @@ plt.title('Count of Sale Ratios Outside DOR Limits (0.3 - 1.7) by Market Cluster
 plt.ylabel('Count')
 plt.xlabel('Market Cluster ID')
 plt.tight_layout()
+plt.show()
+# %%
+# Plot sale ratio vs. actual year built
+plt.figure(figsize=(10, 6))
+plt.scatter(MapData['actual_year_built'], MapData['sale_ratio'], alpha=0.5)
+plt.axhline(y=0.85, color='r', linestyle='--', label='Ideal Sale Ratio (0.85)')
+plt.xlabel('Actual Year Built')
+plt.ylabel('Sale Ratio')
+plt.title('Sale Ratio vs. Actual Year Built')
+plt.legend()
+plt.show()
+
+# Plot sale ratio vs. Market Cluster ID
+plt.figure(figsize=(12, 6))
+sns.boxplot(x='Market_Cluster_ID', y='sale_ratio', data=MapData)
+plt.axhline(y=0.85, color='r', linestyle='--', label='Ideal Sale Ratio (0.85)')
+plt.xticks(rotation=90)
+plt.xlabel('Market Cluster ID')
+plt.ylabel('Sale Ratio')
+plt.title('Sale Ratio by Market Cluster ID')
+plt.legend()
+plt.show()
+
+# %%
+sale_ratio_summary = MapData['sale_ratio'].describe()
+print("Sale Ratio Summary:\n", sale_ratio_summary)
+# %%
+MapData['build_period'] = pd.cut(MapData['actual_year_built'],
+                                     bins=[0, 1950, 1975, 1994, 2024],
+                                     labels=['Pre-1950', '1950-1975', '1976-1994', 'Post-1994'])
+
+# Boxplot to show sale ratios by build period
+plt.figure(figsize=(10, 6))
+sns.boxplot(x='build_period', y='sale_ratio', data=MapData)
+plt.axhline(y=0.85, color='r', linestyle='--', label='Ideal Sale Ratio (0.85)')
+plt.xlabel('Build Period')
+plt.ylabel('Sale Ratio')
+plt.title('Sale Ratio by Build Period')
+plt.legend()
+plt.show()
+
+# %%
+plt.figure(figsize=(10, 6))
+plt.hist(MapData['effective_age'], bins=30, edgecolor='k', alpha=0.7)
+plt.xlabel('Effective Age')
+plt.ylabel('Frequency')
+plt.title('Distribution of Effective Age')
 plt.show()
 # %%
