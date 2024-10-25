@@ -17,23 +17,23 @@ import matplotlib.pyplot as plt
 print("Loading data from CSV files...")
 # Load data from multiple CSV files
 market_areas = pd.read_csv('Data/normalizedMAs.csv')
-sale_data = pd.read_csv("Data/dp33.csv")
+sale_data = pd.read_csv("Data/dp36.csv")
 
 Haile = pd.read_csv("Data/Haile.csv")
 High_Springs_Main = pd.read_csv("Data/High_Springs_Main.csv")
 Turkey_Creek = pd.read_csv("Data/Turkey_Creek.csv")
 Alachua_Main = pd.read_csv("Data/Alachua_Main.csv")
 #Rural_UI = pd.read_csv("Data/Rural_UI.csv")
-West_Outer_Gainesville = pd.read_csv("Data/West_Outer_Gainesville.csv")
+#West_Outer_Gainesville = pd.read_csv("Data/West_Outer_Gainesville.csv")
 Gainesvilleish_Region = pd.read_csv("Data/Gainesvilleish_Region.csv")
-West_of_Waldo_rd = pd.read_csv("Data/West_of_Waldo_rd.csv")
+#West_of_Waldo_rd = pd.read_csv("Data/West_of_Waldo_rd.csv")
 Real_Tioga = pd.read_csv("Data/Real_Tioga.csv")
 Duck_Pond = pd.read_csv("Data/DuckPond.csv")
 Newmans_Lake = pd.read_csv("Data/Newmans_Lake.csv")
 EastMidtownEastA = pd.read_csv("Data/EastMidtownEastA.csv")
 HighSpringsAGNV = pd.read_csv("Data/HighSpringsAGNV.csv")
-Thornebrooke = pd.read_csv("Data/Thornebrooke.csv")
-HSBUI = pd.read_csv("Data/HSBUI.csv")
+#Thornebrooke = pd.read_csv("Data/Thornebrooke.csv")
+#HSBUI = pd.read_csv("Data/HSBUI.csv")
 Golfview = pd.read_csv("Data/Golfview.csv")
 Lugano = pd.read_csv("Data/Lugano.csv")
 Archer = pd.read_csv("Data/Archer.csv")
@@ -41,7 +41,7 @@ WildsPlantation = pd.read_csv("Data/WildsPlantation.csv")
 Greystone = pd.read_csv("Data/Greystone.csv")
 Eagle_Point = pd.read_csv("Data/Eagle_Point.csv")
 Near_Haile = pd.read_csv("Data/Near_Haile.csv")
-Magnolia_Heights = pd.read_csv("Data/Magnolia_Heights.csv")
+#Magnolia_Heights = pd.read_csv("Data/Magnolia_Heights.csv")
 Buck_Bay = pd.read_csv("Data/Buck_Bay.csv")
 
 # Clean the market area and sale data
@@ -99,6 +99,18 @@ result['is_tiny'] = result['living_area'].apply(lambda x: True if x < 1000 else 
 # Convert 'prop_id' to string for consistency across dataframes
 result['prop_id'] = result['prop_id'].astype(str)
 
+# Update effective age based on given conditions
+'''
+# Condition 1: Effective year built is 1994, and actual year built is between 1984 and 1994 inclusive
+condition1 = (result['effective_year_built'] == 1994) & (result['actual_year_built'] <= 1994) & (result['actual_year_built'] >= 1984)
+print(f"Number of rows matching condition1: {condition1.sum()}")
+result.loc[condition1, 'effective_age'] = 2024 - result['actual_year_built']
+
+# Condition 2: Effective year built is less than or equal to 1994, and actual year built is less than 1984
+condition2 = (result['effective_year_built'] <= 1994) & (result['actual_year_built'] < 1984)
+print(f"Number of rows matching condition2: {condition2.sum()}")
+result.loc[condition2, 'effective_age'] = 2024 - 1984
+'''
 # Factor Engineer Percent Good based on effective age
 print("Calculating percent good based on effective age...")
 # Calculate 'percent_good' as a factor of effective age
@@ -127,16 +139,15 @@ Haile['prop_id'] = Haile['prop_id'].astype(str)
 High_Springs_Main['prop_id'] = High_Springs_Main['prop_id'].astype(str)
 Turkey_Creek['prop_id'] = Turkey_Creek['prop_id'].astype(str)
 Alachua_Main['prop_id'] = Alachua_Main['prop_id'].astype(str)
-West_Outer_Gainesville['prop_id'] = West_Outer_Gainesville['prop_id'].astype(str)
+#West_Outer_Gainesville['prop_id'] = West_Outer_Gainesville['prop_id'].astype(str)
 Gainesvilleish_Region['prop_id'] = Gainesvilleish_Region['prop_id'].astype(str)
-West_of_Waldo_rd['prop_id'] = West_of_Waldo_rd['prop_id'].astype(str)
+#West_of_Waldo_rd['prop_id'] = West_of_Waldo_rd['prop_id'].astype(str)
 Real_Tioga['prop_id'] = Real_Tioga['prop_id'].astype(str)
 Duck_Pond['prop_id'] = Duck_Pond['prop_id'].astype(str)
 Newmans_Lake['prop_id'] = Newmans_Lake['prop_id'].astype(str)
 EastMidtownEastA['prop_id'] = EastMidtownEastA['prop_id'].astype(str)
 HighSpringsAGNV['prop_id'] = HighSpringsAGNV['prop_id'].astype(str)
-Thornebrooke['prop_id'] = Thornebrooke['prop_id'].astype(str)
-HSBUI['prop_id'] = HSBUI['prop_id'].astype(str)
+#HSBUI['prop_id'] = HSBUI['prop_id'].astype(str)
 Golfview['prop_id'] = Golfview['prop_id'].astype(str)
 Lugano['prop_id'] = Lugano['prop_id'].astype(str)
 Archer['prop_id'] = Archer['prop_id'].astype(str)
@@ -144,12 +155,12 @@ WildsPlantation['prop_id'] = WildsPlantation['prop_id'].astype(str)
 Greystone['prop_id'] = Greystone['prop_id'].astype(str)
 Eagle_Point['prop_id'] = Eagle_Point['prop_id'].astype(str)
 Near_Haile['prop_id'] = Near_Haile['prop_id'].astype(str)
-Magnolia_Heights['prop_id'] = Magnolia_Heights['prop_id'].astype(str)
+#Magnolia_Heights['prop_id'] = Magnolia_Heights['prop_id'].astype(str)
 Buck_Bay['prop_id'] = Buck_Bay['prop_id'].astype(str)
 
 # Assign new Market Cluster IDs based on subdivision membership and tax area description
 result.loc[result['prop_id'].isin(Haile['prop_id']), 'Market_Cluster_ID'] = 'HaileLike'
-result.loc[result['Market_Cluster_ID'] == 'WaldoRural_B', 'Market_Cluster_ID'] = 'HSBUI'
+#result.loc[result['Market_Cluster_ID'] == 'WaldoRural_B', 'Market_Cluster_ID'] = 'HSBUI'
 result.loc[result['tax_area_description'] == 'LACROSSE', 'Market_Cluster_ID'] = 'HSBUI'
 result.loc[result['tax_area_description'] == 'HAWTHORNE', 'Market_Cluster_ID'] = 'Hawthorne'
 result.loc[result['Market_Cluster_ID'] == 'HighSprings_D', 'Market_Cluster_ID'] = 'High_Springs_Main'
@@ -158,21 +169,21 @@ result.loc[result['Market_Cluster_ID'] == 'MidtownEast_F', 'Market_Cluster_ID'] 
 result.loc[result['Market_Cluster_ID'] == 'HighSprings_C', 'Market_Cluster_ID'] = 'HSBUI'
 result.loc[result['Market_Cluster_ID'] == 'Springtree_C', 'Market_Cluster_ID'] = 'HSBUI'
 result.loc[result['Market_Cluster_ID'] == 'swNewberry_C', 'Market_Cluster_ID'] = 'HSBUI'
-result.loc[result['Market_Cluster_ID'] == 'WaldoRural_C', 'Market_Cluster_ID'] = 'HSBUI'
-result.loc[result['Market_Cluster_ID'] == 'HighSprings_E', 'Market_Cluster_ID'] = 'HSBUI'
+#result.loc[result['Market_Cluster_ID'] == 'WaldoRural_C', 'Market_Cluster_ID'] = 'HSBUI'
+#result.loc[result['Market_Cluster_ID'] == 'HighSprings_E', 'Market_Cluster_ID'] = 'HSBUI'
 result.loc[result['prop_id'].isin(High_Springs_Main['prop_id']), 'Market_Cluster_ID'] = 'High_Springs_Main'
 result.loc[result['prop_id'].isin(Turkey_Creek['prop_id']), 'Market_Cluster_ID'] = 'Turkey_Creek'
 result.loc[result['prop_id'].isin(Alachua_Main['prop_id']), 'Market_Cluster_ID'] = 'Alachua_Main'
-result.loc[result['prop_id'].isin(West_Outer_Gainesville['prop_id']), 'Market_Cluster_ID'] = 'West_Outer_Gainesville'
+#result.loc[result['prop_id'].isin(West_Outer_Gainesville['prop_id']), 'Market_Cluster_ID'] = 'West_Outer_Gainesville'
 result.loc[result['prop_id'].isin(Gainesvilleish_Region['prop_id']), 'Market_Cluster_ID'] = 'Gainesvilleish_Region'
-result.loc[result['prop_id'].isin(West_of_Waldo_rd['prop_id']), 'Market_Cluster_ID'] = 'West_of_Waldo_rd'
+#result.loc[result['prop_id'].isin(West_of_Waldo_rd['prop_id']), 'Market_Cluster_ID'] = 'West_of_Waldo_rd'
 result.loc[result['prop_id'].isin(Real_Tioga['prop_id']), 'Market_Cluster_ID'] = 'Real_Tioga'
 result.loc[result['prop_id'].isin(Duck_Pond['prop_id']), 'Market_Cluster_ID'] = 'Duck_Pond'
 result.loc[result['prop_id'].isin(Newmans_Lake['prop_id']), 'Market_Cluster_ID'] = 'Newmans_Lake'
 result.loc[result['prop_id'].isin(EastMidtownEastA['prop_id']), 'Market_Cluster_ID'] = 'EastMidtownEastA'
 result.loc[result['prop_id'].isin(HighSpringsAGNV['prop_id']), 'Market_Cluster_ID'] = 'HighSpringsAGNV'
-result.loc[result['prop_id'].isin(Thornebrooke['prop_id']), 'Market_Cluster_ID'] = 'Thornebrooke'
-result.loc[result['prop_id'].isin(HSBUI['prop_id']), 'Market_Cluster_ID'] = 'HSBUI'
+#result.loc[result['prop_id'].isin(Thornebrooke['prop_id']), 'Market_Cluster_ID'] = 'Thornebrooke'
+#result.loc[result['prop_id'].isin(HSBUI['prop_id']), 'Market_Cluster_ID'] = 'HSBUI'
 result.loc[result['prop_id'].isin(Golfview['prop_id']), 'Market_Cluster_ID'] = 'Golfview'
 result.loc[result['prop_id'].isin(Lugano['prop_id']), 'Market_Cluster_ID'] = 'Lugano'
 result.loc[result['prop_id'].isin(Archer['prop_id']), 'Market_Cluster_ID'] = 'Archer'
@@ -180,7 +191,7 @@ result.loc[result['prop_id'].isin(WildsPlantation['prop_id']), 'Market_Cluster_I
 result.loc[result['prop_id'].isin(Greystone['prop_id']), 'Market_Cluster_ID'] = 'HaileLike'
 result.loc[result['prop_id'].isin(Eagle_Point['prop_id']), 'Market_Cluster_ID'] = 'HaileLike'
 result.loc[result['prop_id'].isin(Near_Haile['prop_id']), 'Market_Cluster_ID'] = 'HaileLike'
-result.loc[result['prop_id'].isin(Magnolia_Heights['prop_id']), 'Market_Cluster_ID'] = 'Magnolia_Heights'
+#result.loc[result['prop_id'].isin(Magnolia_Heights['prop_id']), 'Market_Cluster_ID'] = 'Magnolia_Heights'
 result.loc[result['prop_id'].isin(Buck_Bay['prop_id']), 'Market_Cluster_ID'] = 'Buck_Bay'
 
 # Create dummy variables for non-numeric data
@@ -198,28 +209,35 @@ column_mapping = {
 }
 result.rename(columns=column_mapping, inplace=True)
 
-# Add a binary column 'built_before_1974' to indicate if 'actual_year_built' is less than 1974
-result['built_before_1974'] = (result['actual_year_built'] < 1974).astype(int)
+# Add a binary column 'built_before_1984' to indicate if 'actual_year_built' is less than 1984
+result['built_before_1984'] = (result['actual_year_built'] < 1984).astype(int)
 
 # Create a binary variable for properties with 'actual_year_built' < 1994 and 'effective_year_built' <= 1994
-result['built_pre_1994_with_effective_le_1994'] = (
-    (result['actual_year_built'] < 1994) & (result['effective_year_built'] <= 1994)
+result['built_pre_1970_with_effective_le_1994'] = (
+    (result['actual_year_built'] < 1970) & (result['effective_year_built'] <= 1994)
 ).astype(int)
-
+'''
 # Exclude properties built before 1994
 result = result[result['actual_year_built'] >= 1994]
 
 # Exclude properties with a quality code of 0.75 or 1.7
 result = result[~result['imprv_det_quality_cd'].isin([0.75, 1.7])]
+'''
+# Exclude properties with legal acreage above 10 acres
+result = result[result['legal_acreage'] <= 10]
 
-# Exclude properties with legal acreage above 2 acres
-result = result[result['legal_acreage'] <= 2]
-
+'''
 # Exclude properties where the sale price is outside 2 standard deviations from the mean
 sale_price_mean = result['sl_price'].mean()
 sale_price_std = result['sl_price'].std()
 result = result[(result['sl_price'] >= sale_price_mean - 2 * sale_price_std) & 
                 (result['sl_price'] <= sale_price_mean + 2 * sale_price_std)]
+'''
+# Create a dummy variable for "era_built" based on 10-year intervals starting from 1900
+era_built_bins = list(range(1900, 2040, 10))
+result['era_built'] = pd.cut(result['actual_year_built'], bins=era_built_bins, labels=[f"{1900 + i*10}s" for i in range(len(era_built_bins) - 1)], right=False)
+# Create dummy variables for each era_built category
+result = pd.get_dummies(result, columns=['era_built'], prefix='era')
 
 # Ensure that all column names are strings
 result.columns = result.columns.astype(str)
@@ -227,9 +245,13 @@ result.columns = result.columns.astype(str)
 # %% Run some regression with logs in the formula
 print("Running regression model...")
 # Regression formula with tax areas and townhouse-related variables
-regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area) + np.log(landiness) + np.log(percent_good) + np.log(imprv_det_quality_cd) + np.log(total_porch_area + 1) + np.log(total_garage_area + 1) + Springtree_B + HighSprings_A + MidtownEast_C + swNewberry_B + MidtownEast_A + swNewberry_A + MidtownEast_B + HighSprings_F + Springtree_A + Tioga_B + Tioga_A + MidtownEast_D + WaldoRural_A + West_Outer_Gainesville + Alachua_Main + High_Springs_Main + HaileLike + HighSprings_B + Magnolia_Heights + West_of_Waldo_rd + Real_Tioga + Duck_Pond + Newmans_Lake + EastMidtownEastA + HighSpringsAGNV + Thornebrooke + Hawthorne + HSBUI + HighSprings_B + Golfview + Lugano + Archer + WildsPlantation+Buck_Bay+in_subdivision"
+regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area) + np.log(landiness) + np.log(percent_good) + np.log(imprv_det_quality_cd) + np.log(total_porch_area + 1) + np.log(total_garage_area + 1) + Springtree_B + HighSprings_A + MidtownEast_C + swNewberry_B + MidtownEast_A + swNewberry_A + MidtownEast_B + HighSprings_F + Springtree_A + Tioga_B + Tioga_A + MidtownEast_D + WaldoRural_A + Alachua_Main + High_Springs_Main + HaileLike + HighSprings_B + Real_Tioga + Duck_Pond + Newmans_Lake + EastMidtownEastA + HighSpringsAGNV + Hawthorne + HighSprings_B + Golfview + Lugano + Archer + WildsPlantation+Buck_Bay+in_subdivision+built_pre_1970_with_effective_le_1994+has_lake+WaldoRural_C+HighSprings_E+HSBUI+number_of_baths"
 
-#built_before_1974+built_pre_1994_with_effective_le_1994"
+#West_Outer_Gainesville+Thornebrooke+ West_of_Waldo_rd+Magnolia_Heights
+
+#era_1900s+era_1910s+era_1920s+era_1930s+era_1940s+era_1950s+era_1960s+era_1970s+era_1980s+era_1990s+era_2020s+era_2010s"
+
+#built_before_1984+built_pre_1994_with_effective_le_1994"
 
 # Split data into training and test sets
 print("Splitting data into training and test sets...")
@@ -503,4 +525,28 @@ plt.xlabel('Effective Age')
 plt.ylabel('Frequency')
 plt.title('Distribution of Effective Age')
 plt.show()
+# %%
+import pandas as pd
+
+# Assuming your dataset is in a DataFrame called 'MapData' and has columns 'sale_ratio' and 'pid'
+
+# Define thresholds for the lowest 5% and highest 5%
+lower_threshold = MapData['sale_ratio'].quantile(0.05)
+upper_threshold = MapData['sale_ratio'].quantile(0.95)
+
+# Filter for the lowest 5% and highest 5% of sale ratios
+lowest_5_percent = MapData[MapData['sale_ratio'] <= lower_threshold]
+highest_5_percent = MapData[MapData['sale_ratio'] >= upper_threshold]
+
+# Combine the results
+outliers = pd.concat([lowest_5_percent, highest_5_percent])
+
+# Select specific characteristics to include, particularly 'pid'
+outlier_characteristics = outliers[['prop_id', 'sale_ratio', 'Market_Cluster_ID', 'Assessment_Val', 'landiness', 'imprv_det_quality_cd']]  # Add any other characteristics of interest here
+
+# Save the result to a CSV file
+outlier_characteristics.to_csv('outlier_characteristics.csv', index=False)
+
+# Display the result
+display(outlier_characteristics)
 # %%
