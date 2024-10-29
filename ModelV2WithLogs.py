@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 print("Loading data from CSV files...")
 # Load data from multiple CSV files
 market_areas = pd.read_csv('Data/normalizedMAs.csv')
-sale_data = pd.read_csv("Data/dp36.csv")
+sale_data = pd.read_csv("Data/dp37.csv")
 
 Haile = pd.read_csv("Data/Haile.csv")
 High_Springs_Main = pd.read_csv("Data/High_Springs_Main.csv")
@@ -238,6 +238,8 @@ era_built_bins = list(range(1900, 2040, 10))
 result['era_built'] = pd.cut(result['actual_year_built'], bins=era_built_bins, labels=[f"{1900 + i*10}s" for i in range(len(era_built_bins) - 1)], right=False)
 # Create dummy variables for each era_built category
 result = pd.get_dummies(result, columns=['era_built'], prefix='era')
+
+result.loc[result['prop_id'] == 84296, 'sl_price'] = 90000
 
 # Ensure that all column names are strings
 result.columns = result.columns.astype(str)
