@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 print("Loading data from CSV files...")
 # Load data from multiple CSV files
 market_areas = pd.read_csv('Data/normalizedMAs.csv')
-sale_data = pd.read_csv("Data/dp37.csv")
+sale_data = pd.read_csv("Data/dp40.csv")
 
 Haile = pd.read_csv("Data/Haile.csv")
 High_Springs_Main = pd.read_csv("Data/High_Springs_Main.csv")
@@ -64,10 +64,13 @@ print("Creating Market Cluster ID...")
 # Create a new column 'Market_Cluster_ID' by combining 'MA' and 'Cluster ID'
 market_areas['Market_Cluster_ID'] = market_areas['MA'].astype(str) + '_' + market_areas['Cluster ID'].astype(str)
 
+sale_data.loc[sale_data['prop_id'] == '84296', 'sl_price'] = 90000
+sale_data.loc[sale_data['prop_id'] == '79157', 'sl_price'] = 300000
+
 # Factor engineer "Assessment Val"
 print("Factor engineering Assessment Val...")
 # Calculate the 'Assessment_Val' based on the sale price and miscellaneous value
-sale_data['Assessment_Val'] = .85 * (sale_data['sl_price'] - (sale_data['Total_MISC_Val'] / .85))
+sale_data['Assessment_Val'] = .85 * (sale_data['sl_price'] - (sale_data['MISC_Val'] / .85))
 # Add a validation step to ensure 'Assessment_Val' is not negative
 sale_data['Assessment_Val'] = sale_data['Assessment_Val'].apply(lambda x: x if x > 0 else np.nan)
 
@@ -239,8 +242,6 @@ result['era_built'] = pd.cut(result['actual_year_built'], bins=era_built_bins, l
 # Create dummy variables for each era_built category
 result = pd.get_dummies(result, columns=['era_built'], prefix='era')
 
-result.loc[result['prop_id'] == 84296, 'sl_price'] = 90000
-
 # Ensure that all column names are strings
 result.columns = result.columns.astype(str)
 
@@ -275,7 +276,7 @@ predictions['predicted_log_Assessment_Val'] = regresult.predict(predictions)
 predictions['predicted_Assessment_Val'] = np.exp(predictions['predicted_log_Assessment_Val'])
 # Define actual and predicted values for further evaluation
 actual_values = predictions['sl_price']
-predicted_values = predictions['predicted_Assessment_Val'] + predictions['Total_MISC_Val']
+predicted_values = predictions['predicted_Assessment_Val'] + predictions['MISC_Val']
 predicted_values_mae = predictions['predicted_Assessment_Val']
 actual_values_mae = predictions['Assessment_Val']
 
@@ -341,7 +342,7 @@ MapData['predicted_log_Assessment_Val'] = regresult.predict(MapData)
 # Convert predicted log values to original scale
 MapData['predicted_Assessment_Val'] = np.exp(MapData['predicted_log_Assessment_Val'])
 # Calculate predicted market value by adding miscellaneous value
-MapData['predicted_Market_Val'] = MapData['predicted_Assessment_Val'] + MapData['Total_MISC_Val']
+MapData['predicted_Market_Val'] = MapData['predicted_Assessment_Val'] + MapData['MISC_Val']
 # Calculate residuals for market and assessment values
 MapData['Market_Residual'] = MapData['predicted_Market_Val'] - MapData['sl_price']
 MapData['Assessment_Residual'] = MapData['predicted_Assessment_Val'] - MapData['Assessment_Val']
