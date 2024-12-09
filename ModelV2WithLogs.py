@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 print("Loading data from CSV files...")
 # Load data from multiple CSV files
 market_areas = pd.read_csv('Data/normalizedMAs.csv')
-sale_data = pd.read_csv("Data/dp42.csv")
+sale_data = pd.read_csv("Data/dp51.csv")
 
 Haile = pd.read_csv("Data/Haile.csv")
 High_Springs_Main = pd.read_csv("Data/High_Springs_Main.csv")
@@ -43,7 +43,16 @@ Eagle_Point = pd.read_csv("Data/Eagle_Point.csv")
 Near_Haile = pd.read_csv("Data/Near_Haile.csv")
 #Magnolia_Heights = pd.read_csv("Data/Magnolia_Heights.csv")
 Buck_Bay = pd.read_csv("Data/Buck_Bay.csv")
-
+Ironwood = pd.read_csv("Data/Ironwood.csv")
+Serenola = pd.read_csv("Data/Serenola.csv")
+BluesCreek = pd.read_csv("Data/BluesCreek.csv")
+Edgemoore = pd.read_csv("Data/Edgemoore.csv")
+SummerCreek = pd.read_csv("Data/SummerCreek.csv")
+EastGNV = pd.read_csv("Data/EastGNV.csv")
+TC_Forest = pd.read_csv("Data/TC_Forest.csv")
+CarolEstates = pd.read_csv("Data/CarolEstates.csv")
+Westchesterish = pd.read_csv("Data/Westchesterish.csv")
+QuailCreekish = pd.read_csv("Data/QuailCreekish.csv")
 # Clean the market area and sale data
 print("Cleaning market area and sale data...")
 # Select only relevant columns from market_areas
@@ -104,18 +113,20 @@ result['is_tiny'] = result['living_area'].apply(lambda x: True if x < 1000 else 
 # Convert 'prop_id' to string for consistency across dataframes
 result['prop_id'] = result['prop_id'].astype(str)
 
-# Update effective age based on given conditions
-'''
-# Condition 1: Effective year built is 1994, and actual year built is between 1984 and 1994 inclusive
-condition1 = (result['effective_year_built'] == 1994) & (result['actual_year_built'] <= 1994) & (result['actual_year_built'] >= 1984)
-print(f"Number of rows matching condition1: {condition1.sum()}")
-result.loc[condition1, 'effective_age'] = 2024 - result['actual_year_built']
+# Effage overwrites
+result.loc[result['prop_id'].isin(['85636']), 'effective_age'] = (result['prop_val_yr'] - 1) - 1992
+result.loc[result['prop_id'].isin(['98109']), 'effective_age'] = (result['prop_val_yr'] - 1) - 1993
+result.loc[result['prop_id'].isin(['47151']), 'effective_age'] = (result['prop_val_yr'] - 1) - 1992
+result.loc[result['prop_id'].isin(['92312']), 'effective_age'] = (result['prop_val_yr'] - 1) - 1993
+result.loc[result['prop_id'].isin(['14875']), 'effective_age'] = (result['prop_val_yr'] - 1) - 1992
+result.loc[result['prop_id'].isin(['92322']), 'effective_age'] = (result['prop_val_yr'] - 1) - 1992
+result.loc[result['prop_id'].isin(['87817']), 'effective_age'] = (result['prop_val_yr'] - 1) - 1993
+result.loc[result['prop_id'].isin(['9073']), 'effective_age'] = (result['prop_val_yr'] - 1) - 1993
+result.loc[result['prop_id'].isin(['66141']), 'effective_age'] = (result['prop_val_yr'] - 1) - 1993
+result.loc[result['prop_id'].isin(['86173']), 'effective_age'] = (result['prop_val_yr'] - 1) - 1993
+result.loc[result['prop_id'].isin(['81469']), 'effective_age'] = (result['prop_val_yr'] - 1) - 1993
+result.loc[result['prop_id'].isin(['95004']), 'effective_age'] = (result['prop_val_yr'] - 1) - 1993
 
-# Condition 2: Effective year built is less than or equal to 1994, and actual year built is less than 1984
-condition2 = (result['effective_year_built'] <= 1994) & (result['actual_year_built'] < 1984)
-print(f"Number of rows matching condition2: {condition2.sum()}")
-result.loc[condition2, 'effective_age'] = 2024 - 1984
-'''
 # Factor Engineer Percent Good based on effective age
 print("Calculating percent good based on effective age...")
 # Calculate 'percent_good' as a factor of effective age
@@ -125,6 +136,16 @@ result['percent_good'] = 1 - (result['effective_age']/ 100)
 result.loc[result['prop_id'].isin(['96615']), 'imprv_det_quality_cd'] = 1
 
 result.loc[result['prop_id'].isin(['96411']), 'imprv_det_quality_cd'] = 2
+
+result.loc[result['prop_id'].isin(['13894']), 'imprv_det_quality_cd'] = 2
+
+result.loc[result['prop_id'].isin(['8894']), 'imprv_det_quality_cd'] = 2
+
+result.loc[result['prop_id'].isin(['19165']), 'imprv_det_quality_cd'] = 4
+
+
+#result.loc[result['actual_year_built'] <= 1970, 'imprv_det_quality_cd'] = 2
+
 # Linearize the quality codes
 print("Linearizing quality codes...")
 # Replace quality codes with numerical values for linear regression
@@ -162,7 +183,16 @@ Eagle_Point['prop_id'] = Eagle_Point['prop_id'].astype(str)
 Near_Haile['prop_id'] = Near_Haile['prop_id'].astype(str)
 #Magnolia_Heights['prop_id'] = Magnolia_Heights['prop_id'].astype(str)
 Buck_Bay['prop_id'] = Buck_Bay['prop_id'].astype(str)
-
+EastGNV['prop_id'] = EastGNV['prop_id'].astype(str)
+SummerCreek['prop_id'] = SummerCreek['prop_id'].astype(str)
+#Edgemoore['prop_id'] = Edgemoore['prop_id'].astype(str)
+#BluesCreek['prop_id'] = BluesCreek['prop_id'].astype(str)
+#Serenola['prop_id'] = Serenola['prop_id'].astype(str)
+Ironwood['prop_id'] = Ironwood['prop_id'].astype(str)
+TC_Forest['prop_id'] = TC_Forest['prop_id'].astype(str)
+CarolEstates['prop_id'] = CarolEstates['prop_id'].astype(str)
+Westchesterish['prop_id'] = Westchesterish['prop_id'].astype(str)
+QuailCreekish['prop_id'] = QuailCreekish['prop_id'].astype(str)
 # Assign new Market Cluster IDs based on subdivision membership and tax area description
 result.loc[result['prop_id'].isin(Haile['prop_id']), 'Market_Cluster_ID'] = 'HaileLike'
 #result.loc[result['Market_Cluster_ID'] == 'WaldoRural_B', 'Market_Cluster_ID'] = 'HSBUI'
@@ -194,11 +224,20 @@ result.loc[result['prop_id'].isin(Lugano['prop_id']), 'Market_Cluster_ID'] = 'Lu
 result.loc[result['prop_id'].isin(Archer['prop_id']), 'Market_Cluster_ID'] = 'Archer'
 result.loc[result['prop_id'].isin(WildsPlantation['prop_id']), 'Market_Cluster_ID'] = 'WildsPlantation'
 result.loc[result['prop_id'].isin(Greystone['prop_id']), 'Market_Cluster_ID'] = 'HaileLike'
-result.loc[result['prop_id'].isin(Eagle_Point['prop_id']), 'Market_Cluster_ID'] = 'Eagle_Point'
+#result.loc[result['prop_id'].isin(Eagle_Point['prop_id']), 'Market_Cluster_ID'] = 'Eagle_Point'
 result.loc[result['prop_id'].isin(Near_Haile['prop_id']), 'Market_Cluster_ID'] = 'HaileLike'
 #result.loc[result['prop_id'].isin(Magnolia_Heights['prop_id']), 'Market_Cluster_ID'] = 'Magnolia_Heights'
 result.loc[result['prop_id'].isin(Buck_Bay['prop_id']), 'Market_Cluster_ID'] = 'Buck_Bay'
-
+result.loc[result['prop_id'].isin(EastGNV['prop_id']), 'Market_Cluster_ID'] = 'EastGNV'
+result.loc[result['prop_id'].isin(SummerCreek['prop_id']), 'Market_Cluster_ID'] = 'SummerCreek'
+#result.loc[result['prop_id'].isin(Edgemoore['prop_id']), 'Market_Cluster_ID'] = 'Edgemoore'
+#result.loc[result['prop_id'].isin(BluesCreek['prop_id']), 'Market_Cluster_ID'] = 'BluesCreek'
+#result.loc[result['prop_id'].isin(Serenola['prop_id']), 'Market_Cluster_ID'] = 'Serenola'
+result.loc[result['prop_id'].isin(Ironwood['prop_id']), 'Market_Cluster_ID'] = 'Ironwood'
+result.loc[result['prop_id'].isin(TC_Forest['prop_id']), 'Market_Cluster_ID'] = 'TC_Forest'
+result.loc[result['prop_id'].isin(CarolEstates['prop_id']), 'Market_Cluster_ID'] = 'CarolEstates'
+result.loc[result['prop_id'].isin(Westchesterish['prop_id']), 'Market_Cluster_ID'] = 'Westchesterish'
+result.loc[result['prop_id'].isin(QuailCreekish['prop_id']), 'Market_Cluster_ID'] = 'QuailCreekish'
 # Create dummy variables for non-numeric data
 print("Creating dummy variables...")
 # Join dummy variables for 'tax_area_description' and 'Market_Cluster_ID'
@@ -222,22 +261,12 @@ result['built_pre_1970_with_effective_le_1994'] = (
     (result['actual_year_built'] < 1970) & (result['effective_year_built'] <= 1994)
 ).astype(int)
 '''
-# Exclude properties built before 1994
-result = result[result['actual_year_built'] >= 1994]
-
 # Exclude properties with a quality code of 0.75 or 1.7
 result = result[~result['imprv_det_quality_cd'].isin([0.75, 1.7])]
 '''
 # Exclude properties with legal acreage above 10 acres
 result = result[result['legal_acreage'] <= 10]
 
-'''
-# Exclude properties where the sale price is outside 2 standard deviations from the mean
-sale_price_mean = result['sl_price'].mean()
-sale_price_std = result['sl_price'].std()
-result = result[(result['sl_price'] >= sale_price_mean - 2 * sale_price_std) & 
-                (result['sl_price'] <= sale_price_mean + 2 * sale_price_std)]
-'''
 # Create a dummy variable for "era_built" based on 10-year intervals starting from 1900
 era_built_bins = list(range(1900, 2040, 10))
 result['era_built'] = pd.cut(result['actual_year_built'], bins=era_built_bins, labels=[f"{1900 + i*10}s" for i in range(len(era_built_bins) - 1)], right=False)
@@ -250,7 +279,7 @@ result.columns = result.columns.astype(str)
 # %% Run some regression with logs in the formula
 print("Running regression model...")
 # Regression formula with tax areas and townhouse-related variables
-regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area) + np.log(landiness) + np.log(percent_good) + np.log(imprv_det_quality_cd) + np.log(total_porch_area + 1) + np.log(total_garage_area + 1) + Springtree_B + HighSprings_A + MidtownEast_C + swNewberry_B + MidtownEast_A + swNewberry_A + MidtownEast_B + HighSprings_F + Springtree_A + Tioga_B + Tioga_A + MidtownEast_D + WaldoRural_A + Alachua_Main + High_Springs_Main + HaileLike + HighSprings_B + Real_Tioga + Duck_Pond + Newmans_Lake + EastMidtownEastA + HighSpringsAGNV + Hawthorne + HighSprings_B + Golfview + Lugano + Archer + WildsPlantation+Buck_Bay+in_subdivision+has_lake+WaldoRural_C+HighSprings_E+HSBUI+number_of_baths+Eagle_Point"
+regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area) + np.log(landiness) + np.log(percent_good) + np.log(imprv_det_quality_cd) + np.log(total_porch_area + 1) + np.log(total_garage_area + 1) + Springtree_B + HighSprings_A + MidtownEast_C + swNewberry_B + MidtownEast_A + swNewberry_A + MidtownEast_B + HighSprings_F + Springtree_A + Tioga_B + Tioga_A + MidtownEast_D + WaldoRural_A + Alachua_Main + High_Springs_Main + HaileLike + HighSprings_B + Real_Tioga + Duck_Pond + Newmans_Lake + EastMidtownEastA + HighSpringsAGNV + Hawthorne + HighSprings_B + Golfview + Lugano + Archer + WildsPlantation+Buck_Bay+in_subdivision+has_lake+WaldoRural_C+HighSprings_E+HSBUI+number_of_baths+EastGNV+Ironwood+SummerCreek+has_canal+TC_Forest+CarolEstates+Westchesterish+QuailCreekish"
 
 #West_Outer_Gainesville+Thornebrooke+ West_of_Waldo_rd+Magnolia_Heights
 
@@ -554,4 +583,44 @@ outlier_characteristics.to_csv('outlier_characteristics.csv', index=False)
 
 # Display the result
 display(outlier_characteristics)
+# %%
+Q1 = MapData['sale_ratio'].quantile(0.25)
+Q3 = MapData['sale_ratio'].quantile(0.75)
+
+# Calculate IQR
+IQR = Q3 - Q1
+# %%
+# Calculate Q1, Q3, and IQR
+Q1 = MapData['sale_ratio'].quantile(0.25)
+Q3 = MapData['sale_ratio'].quantile(0.75)
+IQR = Q3 - Q1
+
+# Define lower and upper bounds
+lower_bound = Q1 - 3 * IQR
+upper_bound = Q3 + 3 * IQR
+
+# Filter data within the bounds
+outliers_df = MapData[(MapData['sale_ratio'] < lower_bound) | (MapData['sale_ratio'] > upper_bound)]
+
+
+print("Filtered DataFrame:")
+print(outliers_df)
+outliers_df.to_csv('3IQR.csv')
+# %%
+# Calculate Q1, Q3, and IQR
+Q1 = MapData['sale_ratio'].quantile(0.25)
+Q3 = MapData['sale_ratio'].quantile(0.75)
+IQR = Q3 - Q1
+
+# Define lower and upper bounds
+lower_bound = Q1 - 1.5 * IQR
+upper_bound = Q3 + 1.5 * IQR
+
+# Filter data within the bounds
+outliers2_df = MapData[(MapData['sale_ratio'] < lower_bound) | (MapData['sale_ratio'] > upper_bound)]
+
+
+print("Filtered DataFrame:")
+print(outliers2_df)
+outliers2_df.to_csv('15IQR.csv')
 # %%
