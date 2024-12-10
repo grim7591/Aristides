@@ -106,9 +106,9 @@ result['in_subdivision'] = result['abs_subdv_cd'].apply(lambda x: True if x > 0 
 # Drop unnecessary columns
 result = result.drop(columns=['abs_subdv_cd', 'MA', 'Cluster ID'])
 # Create a binary variable 'is_townhouse' to indicate if property is a townhouse
-result['is_townhouse'] = result['imprv_type_cd'].apply(lambda x: True if x == '300' else False)
+#result['is_townhouse'] = result['imprv_type_cd'].apply(lambda x: True if x == '300' else False)
 # Create a binary variable 'is_tiny' to indicate if living area is less than 1000 sq ft
-result['is_tiny'] = result['living_area'].apply(lambda x: True if x < 1000 else False)
+#result['is_tiny'] = result['living_area'].apply(lambda x: True if x < 1000 else False)
 
 # Convert 'prop_id' to string for consistency across dataframes
 result['prop_id'] = result['prop_id'].astype(str)
