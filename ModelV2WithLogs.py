@@ -7,7 +7,7 @@ import statsmodels.api as sm
 import statsmodels.formula.api as smf
 import seaborn as sns
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, classification_report
 from IAAOFunctions import PRD, COD, PRB, weightedMean, averageDeviation
 from StrataCaster import StrataCaster
 from PlotPlotter import PlotPlotter
@@ -279,7 +279,7 @@ result.columns = result.columns.astype(str)
 # %% Run some regression with logs in the formula
 print("Running regression model...")
 # Regression formula with tax areas and townhouse-related variables
-regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area) + np.log(landiness) + np.log(percent_good) + np.log(imprv_det_quality_cd) + np.log(total_porch_area + 1) + np.log(total_garage_area + 1) + Springtree_B + HighSprings_A + MidtownEast_C + swNewberry_B + MidtownEast_A + swNewberry_A + MidtownEast_B + HighSprings_F + Springtree_A + Tioga_B + Tioga_A + MidtownEast_D + WaldoRural_A + Alachua_Main + High_Springs_Main + HaileLike + HighSprings_B + Real_Tioga + Duck_Pond + Newmans_Lake + EastMidtownEastA + HighSpringsAGNV + Hawthorne + HighSprings_B + Golfview + Lugano + Archer + WildsPlantation+Buck_Bay+in_subdivision+has_lake+WaldoRural_C+HighSprings_E+HSBUI+number_of_baths+EastGNV+Ironwood+SummerCreek+has_canal+TC_Forest+CarolEstates+Westchesterish+QuailCreekish"
+regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area) + np.log(landiness) + np.log(percent_good) + np.log(imprv_det_quality_cd) + np.log(total_porch_area + 1) + np.log(total_garage_area + 1) + Springtree_B + HighSprings_A + MidtownEast_C + swNewberry_B + MidtownEast_A + swNewberry_A + MidtownEast_B + HighSprings_F + Springtree_A + Tioga_B + Tioga_A + MidtownEast_D + WaldoRural_A + Alachua_Main + High_Springs_Main + HaileLike + HighSprings_B + Real_Tioga + Duck_Pond + Newmans_Lake + EastMidtownEastA + HighSpringsAGNV + Hawthorne + HighSprings_B + Golfview + Lugano + Archer + WildsPlantation+Buck_Bay+in_subdivision+has_lake+WaldoRural_C+HighSprings_E+HSBUI+np.log(number_of_baths)+EastGNV+Ironwood+SummerCreek+has_canal+TC_Forest+CarolEstates+Westchesterish+QuailCreekish"
 
 #West_Outer_Gainesville+Thornebrooke+ West_of_Waldo_rd+Magnolia_Heights
 
@@ -623,4 +623,108 @@ outliers2_df = MapData[(MapData['sale_ratio'] < lower_bound) | (MapData['sale_ra
 print("Filtered DataFrame:")
 print(outliers2_df)
 outliers2_df.to_csv('15IQR.csv')
+# %%
+import geopandas as gpd
+from shapely.geometry import Point, MultiPoint
+
+# Example data (replace this with your actual dataset)
+data = MapData
+
+# Convert to GeoDataFrame
+geometry = [Point(xy) for xy in zip(data['CENTROID_X'], data['CENTROID_Y'])]
+gdf = gpd.GeoDataFrame(data, geometry=geometry, crs="EPSG:4326")
+
+# Group by market area and create polygons
+polygons = []
+for market_area, group in gdf.groupby('Market_Cluster_ID'):
+    points = MultiPoint(group.geometry.values)  # Group points into a MultiPoint
+    polygon = points.convex_hull  # Create a polygon (convex hull)
+    polygons.append({'Market_Cluster_ID': market_area, 'geometry': polygon})
+
+# Convert the list of polygons to a GeoDataFrame
+polygons_gdf = gpd.GeoDataFrame(polygons, crs=gdf.crs)
+
+# Visualize the result
+import matplotlib.pyplot as plt
+fig, ax = plt.subplots(figsize=(10, 8))
+gdf.plot(ax=ax, color='blue', markersize=50, label='Points')
+polygons_gdf.boundary.plot(ax=ax, color='red', label='Market Area Polygons')
+plt.legend()
+plt.show()
+
+# %%
+output_path = "market_areas.shp"
+polygons_gdf.to_file(output_path)
+# %%
+import alphashape
+import geopandas as gpd
+from shapely.geometry import Point
+
+# Create GeoDataFrame
+gdf = gpd.GeoDataFrame(
+    data,
+    geometry=gpd.points_from_xy(data['CENTROID_X'], data['CENTROID_Y']),
+    crs="EPSG:4326"
+)
+
+# Prepare a list to hold polygons
+polygons = []
+
+# Loop through each market area
+for market_area, group in gdf.groupby('Market_Cluster_ID'):
+    # Extract coordinates as a list of tuples
+    points = [(point.x, point.y) for point in group.geometry]
+    
+    if len(points) >= 3:  # Alpha shapes need at least 3 points
+        alpha = 0.2  # Adjust alpha value as needed
+        polygon = alphashape.alphashape(points, alpha)
+    else:
+        # If fewer than 3 points, use a buffer around points to create a polygon
+        polygon = group.unary_union.buffer(0.01)  # Small buffer size
+    
+    polygons.append({'Market_Cluster_ID': market_area, 'geometry': polygon})
+
+# Convert polygons to GeoDataFrame
+polygons_gdf = gpd.GeoDataFrame(polygons, crs=gdf.crs)
+
+# Visualize
+import matplotlib.pyplot as plt
+fig, ax = plt.subplots(figsize=(10, 8))
+gdf.plot(ax=ax, color='blue', markersize=50, label='Points')
+polygons_gdf.boundary.plot(ax=ax, color='red', label='Market Area Polygons')
+plt.legend()
+plt.show()
+
+
+# %%
+from sklearn.ensemble import RandomForestClassifier
+ForestData = MapData
+
+# Define X and y
+
+X = ForestData[['CENTROID_X', 'CENTROID_Y', 'legal_acreage', 'living_area', 'imprv_det_quality_cd', 'NEWBERRY', 'ARCHER', 'GAINESVILLE', 'HAWTHORNE', 'LACROSSE', 'MICANOPY', 'HIGH_SPRINGS', 'WALDO', 'living_area', 'landiness', 'percent_good', 'imprv_det_quality_cd', 'total_porch_area', 'total_garage_area', 'number_of_baths', 'in_subdivision', 'has_lake', 'has_canal'  
+]]
+
+y = ForestData['Market_Cluster_ID']
+
+# Split into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+# %%
+# Train the Random Forest model
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X_train, y_train)
+
+# Predict on the test set
+y_pred = model.predict(X_test)
+
+# Evaluate the model
+print("Classification Report:")
+print(classification_report(y_test, y_pred))
+
+# %%
+# Feature importance
+importances = model.feature_importances_
+feature_names = X_train.columns
+importance_df = pd.DataFrame({'Feature': feature_names, 'Importance': importances}).sort_values(by='Importance', ascending=False)
+print(importance_df)
 # %%
