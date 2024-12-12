@@ -7482,7 +7482,7 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="Project-Aristides">Project Aristides<a class="anchor-link" href="#Project-Aristides">¶</a></h1><h3 id="A-linear-regression-model-for-predicting-the-value-of-single-family-homes-for-tax-purposes">A linear regression model for predicting the value of single family homes for tax purposes<a class="anchor-link" href="#A-linear-regression-model-for-predicting-the-value-of-single-family-homes-for-tax-purposes">¶</a></h3><h2 id="Data-Preprocessing">Data Preprocessing<a class="anchor-link" href="#Data-Preprocessing">¶</a></h2><h3 id="Data-Pull">Data Pull<a class="anchor-link" href="#Data-Pull">¶</a></h3><p>The model is fed three years of qualified 0100 property sales from 2021 to 2023. Property factors are taken from the year after the sale. After one run of the model properties with a sale ratio that fell outside of 3 * IQR were then excluded as outliers. Properties with a sale ratio that fell outside of 1.5 * IQR were reviewed and excluded or corrected if neccesary.</p>
+<h1 id="Project-Aristides">Project Aristides<a class="anchor-link" href="#Project-Aristides">¶</a></h1><h3 id="A-linear-regression-model-for-predicting-the-value-of-single-family-homes-for-tax-purposes">A linear regression model for predicting the value of single family homes for tax purposes<a class="anchor-link" href="#A-linear-regression-model-for-predicting-the-value-of-single-family-homes-for-tax-purposes">¶</a></h3><h2 id="Data-Preprocessing">Data Preprocessing<a class="anchor-link" href="#Data-Preprocessing">¶</a></h2><h3 id="Data-Pull">Data Pull<a class="anchor-link" href="#Data-Pull">¶</a></h3><p>The model is fed three years of qualified 0100 property sales from 2021 to 2023. Property factors are taken from the year after the sale. After one run of the model properties with a sale ratio that fell outside of 3 * IQR were then excluded as outliers per IAAO standards. Properties with a sale ratio that fell outside of 1.5 * IQR were reviewed and excluded or corrected if neccesary.</p>
 <h3 id="Property-Factors">Property Factors<a class="anchor-link" href="#Property-Factors">¶</a></h3><p>The factors pulled from PACs to use for training and prediction are as follows:</p>
 <ul>
 <li>legal_acreage</li>
@@ -7497,7 +7497,7 @@ a.anchor-link {
 <li>actual_year_built</li>
 <li>prop_val_yr</li>
 <li>total_porch_area (engineered in SQL)</li>
-<li>total_garage_are (engineered in SQL)</li>
+<li>total_garage_area (engineered in SQL)</li>
 <li>effective_age (engineered in SQL)</li>
 <li>has_canal (engineered in SQL)</li>
 <li>has_lake (engineered in SQL)</li>
@@ -7524,7 +7524,7 @@ a.anchor-link {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [20]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [25]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Import Libraries </span>
@@ -7539,6 +7539,7 @@ a.anchor-link {
 <span class="kn">from</span> <span class="nn">StrataCaster</span> <span class="kn">import</span> <span class="n">StrataCaster</span>
 <span class="kn">from</span> <span class="nn">PlotPlotter</span> <span class="kn">import</span> <span class="n">PlotPlotter</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Markdown</span>
 
 <span class="c1"># Import Libraries </span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -7643,7 +7644,7 @@ Cleaning market area and sale data...
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [21]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [26]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Factor engineer "Market Cluster ID"</span>
@@ -7684,7 +7685,7 @@ Cleaning market area and sale data...
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [22]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [27]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">sale_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">sale_data</span><span class="p">[</span><span class="s1">'prop_id'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'84296'</span><span class="p">,</span> <span class="s1">'sl_price'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">90000</span>
@@ -7703,7 +7704,7 @@ Cleaning market area and sale data...
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Creating-%22Assessment_Val%22">Creating "Assessment_Val"<a class="anchor-link" href="#Creating-%22Assessment_Val%22">¶</a></h3><p>Assessment Value = 0.85 * (sale price- (MISC_Val/0.85)). This is the value the model will try to predict.</p>
+<h3 id="Creating-%22Assessment_Val%22">Creating "Assessment_Val"<a class="anchor-link" href="#Creating-%22Assessment_Val%22">¶</a></h3><p>Assessment Value = 0.85 * (sale price - (MISC_Val/0.85)). This is the value the model will try to predict. Per statute we should aim to assess at 85% of purchase price to account for closing costs. MISC value is removed from the value used for training and testing because the model only acccounts for the lot and the base improvement, it has no way to meaningfully interpret and predict MISC value. I believe the MISC values that we have in PACs come from cost manuals.</p>
 </div>
 </div>
 </div>
@@ -7712,7 +7713,7 @@ Cleaning market area and sale data...
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [23]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [28]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Factor engineer "Assessment Val"</span>
@@ -7755,7 +7756,7 @@ Cleaning market area and sale data...
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [24]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [29]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Factor engineer "landiness"</span>
@@ -7798,7 +7799,7 @@ Cleaning market area and sale data...
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [25]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [30]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Merge the market area and sale data</span>
@@ -7841,7 +7842,7 @@ Cleaning market area and sale data...
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [26]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [31]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Make subdivision code binary variable</span>
@@ -7878,7 +7879,7 @@ Cleaning market area and sale data...
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Effective-age-overwrites">Effective age overwrites<a class="anchor-link" href="#Effective-age-overwrites">¶</a></h3><p>In 2024 we updated the effective year built of all properties to 1994 at minimum. When reviewing outliers I applied that same logic to these properties which were evaluated on pre-2024 factors. Now that I think about it I might want to do some kind of "if prop_val_yr - 10 is &gt; eff_yr_blt then eff_yr_blt = prop_val_yr - 10" type thing.</p>
+<h3 id="Effective-age-overwrites">Effective age overwrites<a class="anchor-link" href="#Effective-age-overwrites">¶</a></h3><p>In 2024 we updated the effective year built of all properties to 1994 at minimum. When reviewing outliers I applied that same logic to these properties which were evaluated on pre-2024 factors. Now that I think about it I might want to do some kind of "if prop_val_yr - 10 is &gt; eff_yr_blt then eff_yr_blt = prop_val_yr - 10" type thing. It was determined by valution that a 10 year limit on effective age makes sense and because that was a change in our process and not neccesarily a market shift, I think it makes sense to mitigate the impact of that change on the model by applying it retroactively to previous sale years.</p>
 </div>
 </div>
 </div>
@@ -7887,7 +7888,7 @@ Cleaning market area and sale data...
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [27]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [32]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Effage overwrites</span>
@@ -7924,7 +7925,7 @@ Cleaning market area and sale data...
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [28]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [33]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Factor Engineer Percent Good based on effective age</span>
@@ -7965,7 +7966,7 @@ Cleaning market area and sale data...
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [29]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [34]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">result</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">result</span><span class="p">[</span><span class="s1">'prop_id'</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="s1">'96615'</span><span class="p">]),</span> <span class="s1">'imprv_det_quality_cd'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
@@ -8012,7 +8013,7 @@ Cleaning market area and sale data...
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [30]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [35]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Linearize the quality codes</span>
@@ -8060,7 +8061,7 @@ Cleaning market area and sale data...
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [31]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [36]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># New Market Area subdivisions</span>
@@ -8160,7 +8161,7 @@ Cleaning market area and sale data...
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [32]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [37]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Create dummy variables for non-numeric data</span>
@@ -8203,21 +8204,42 @@ Renaming columns with problematic characters...
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Large-acreage-exclusion">Large acreage exclusion<a class="anchor-link" href="#Large-acreage-exclusion">¶</a></h3><p>For now I've been directed to exclude properties over 10 acres, this threshold might go away or it might get even lower, but right now it's 10.</p>
+<h3 id="Large-acerage-exclusion">Large acerage exclusion<a class="anchor-link" href="#Large-acerage-exclusion">¶</a></h3>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [33]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Exclude properties with legal acreage above 10 acres</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">result</span><span class="p">[</span><span class="s1">'legal_acreage'</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">10</span><span class="p">]</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Define the variable</span>
+<span class="n">legalAcreageMax</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># in acres</span>
+
+<span class="c1"># Create the dynamic markdown</span>
+<span class="n">markdown_content</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
+<span class="s2">The maximum legal acreage for the model is set to `legalAcreageMax`, which is currently **</span><span class="si">{</span><span class="n">legalAcreageMax</span><span class="si">}</span><span class="s2">** acre(s).</span>
+<span class="s2">"""</span>
+
+<span class="c1"># Display the markdown dynamically</span>
+<span class="n">display</span><span class="p">(</span><span class="n">Markdown</span><span class="p">(</span><span class="n">markdown_content</span><span class="p">))</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">result</span><span class="p">[</span><span class="s1">'legal_acreage'</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">legalAcreageMax</span><span class="p">]</span>
 </pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-OutputArea-output" data-mime-type="text/markdown" tabindex="0">
+<p>The maximum legal acreage for the model is set to <code>legalAcreageMax</code>, which is currently <strong>10</strong> acre(s).</p>
 </div>
 </div>
 </div>
@@ -8238,7 +8260,7 @@ Renaming columns with problematic characters...
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [34]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [40]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Ensure that all column names are strings</span>
@@ -8265,7 +8287,7 @@ Renaming columns with problematic characters...
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [35]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [41]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">regressionFormula</span> <span class="o">=</span> <span class="s2">"np.log(Assessment_Val) ~ np.log(living_area) + np.log(landiness) + np.log(percent_good) + np.log(imprv_det_quality_cd) + np.log(total_porch_area + 1) + np.log(total_garage_area + 1) + Springtree_B + HighSprings_A + MidtownEast_C + swNewberry_B + MidtownEast_A + swNewberry_A + MidtownEast_B + HighSprings_F + Springtree_A + Tioga_B + Tioga_A + MidtownEast_D + WaldoRural_A + Alachua_Main + High_Springs_Main + HaileLike + HighSprings_B + Real_Tioga + Duck_Pond + Newmans_Lake + EastMidtownEastA + HighSpringsAGNV + Hawthorne + HighSprings_B + Golfview + Lugano + Archer + WildsPlantation+Buck_Bay+in_subdivision+has_lake+WaldoRural_C+HighSprings_E+HSBUI+number_of_baths+EastGNV+Ironwood+SummerCreek+has_canal+TC_Forest+CarolEstates+Westchesterish+QuailCreekish"</span>
@@ -8281,7 +8303,7 @@ Renaming columns with problematic characters...
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="Train/Test-Split">Train/Test Split<a class="anchor-link" href="#Train/Test-Split">¶</a></h3><p>The data is split into training and testing sets. The training data is used to inform the model, the test data is used to check the performance of the trained model. The split is random but for my purposes I've been using the same random seed so that variation in the results is from changes I make to the model and not from just getting a different seed. I believe the plan in the future will be to run the model on multiple seeds.</p>
+<h3 id="Train/Test-Split">Train/Test Split<a class="anchor-link" href="#Train/Test-Split">¶</a></h3><p>The data is split into training and testing sets. The training data is used to inform the model, the test data is used to check the performance of the trained model.</p>
 </div>
 </div>
 </div>
@@ -8290,12 +8312,20 @@ Renaming columns with problematic characters...
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [36]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [53]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Split data into training and test sets</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"Splitting data into training and test sets..."</span><span class="p">)</span>
-<span class="n">train_data</span><span class="p">,</span> <span class="n">test_data</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">43</span><span class="p">)</span>
+<span class="n">test_size_var</span> <span class="o">=</span> <span class="mf">0.2</span>
+<span class="n">train_data</span><span class="p">,</span> <span class="n">test_data</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="n">test_size_var</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">43</span><span class="p">)</span>
+
+<span class="n">markdown_content2</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
+<span class="s2">The split takes out a random **</span><span class="si">{</span><span class="n">test_size_var</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">%** of the properties to use for testing but for my purposes I've been using the same random seed so that variation in the results is from changes I make to the model and not from just getting a different seed. I believe the plan in the future will be to run the model on multiple seeds.</span>
+<span class="s2">"""</span>
+
+<span class="c1"># Display the markdown dynamically</span>
+<span class="n">display</span><span class="p">(</span><span class="n">Markdown</span><span class="p">(</span><span class="n">markdown_content2</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -8310,6 +8340,12 @@ Renaming columns with problematic characters...
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
 <pre>Splitting data into training and test sets...
 </pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-OutputArea-output" data-mime-type="text/markdown" tabindex="0">
+<p>The split takes out a random <strong>20%</strong> of the properties to use for testing but for my purposes I've been using the same random seed so that variation in the results is from changes I make to the model and not from just getting a different seed. I believe the plan in the future will be to run the model on multiple seeds.</p>
 </div>
 </div>
 </div>
@@ -8330,7 +8366,7 @@ Renaming columns with problematic characters...
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [37]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [43]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Fit the regression model</span>
@@ -8358,8 +8394,8 @@ Regression model summary:
 Dep. Variable:     np.log(Assessment_Val)   R-squared:                       0.927
 Model:                                OLS   Adj. R-squared:                  0.926
 Method:                     Least Squares   F-statistic:                     1440.
-Date:                    Tue, 10 Dec 2024   Prob (F-statistic):               0.00
-Time:                            15:14:00   Log-Likelihood:                 4048.7
+Date:                    Thu, 12 Dec 2024   Prob (F-statistic):               0.00
+Time:                            14:07:31   Log-Likelihood:                 4048.7
 No. Observations:                    5523   AIC:                            -7999.
 Df Residuals:                        5474   BIC:                            -7675.
 Df Model:                              48                                         
@@ -8466,7 +8502,7 @@ Notes:
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [38]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [44]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"Evaluating model performance on test data..."</span><span class="p">)</span>
@@ -8542,6 +8578,7 @@ medianRatio: 0.8483357350395878
 <li>Quality Code lineraization could probably be better</li>
 <li>The market clusters still need some tweaking but I'm a little unsure where to go next with them.</li>
 <li>Need subject matter experts to review some of the other 1.5 * IQR outliers</li>
+<li>Need a way to assign market clusters to properties that aren't in the sale data for when we eventually deploy this. Working on a mix of random forest predition model with some kind of spatial component and then some neighborhoods we could probably just cut by hand.</li>
 <li>Whatever Michael tells me to do</li>
 </ul>
 </div>
