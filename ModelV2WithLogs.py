@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 print("Loading data from CSV files...")
 # Load data from multiple CSV files
 market_areas = pd.read_csv('Data/normalizedMAs.csv')
-sale_data = pd.read_csv("Data/dp51.csv")
+sale_data = pd.read_csv("Data/dp53.csv")
 
 Haile = pd.read_csv("Data/Haile.csv")
 High_Springs_Main = pd.read_csv("Data/High_Springs_Main.csv")
@@ -728,3 +728,609 @@ feature_names = X_train.columns
 importance_df = pd.DataFrame({'Feature': feature_names, 'Importance': importances}).sort_values(by='Importance', ascending=False)
 print(importance_df)
 # %%
+import folium 
+
+IntMapData = MapData
+
+# Calculate the mean latitude and longitude
+center_lat = IntMapData['CENTROID_Y'].mean()
+center_lon = IntMapData['CENTROID_X'].mean()
+
+# Create the map centered on the mean location
+map_clusters = folium.Map(location=[center_lat, center_lon], zoom_start=6, tiles='OpenStreetMap')
+
+# Add markers for all points
+for _, row in IntMapData.iterrows():
+    folium.Marker(
+        location=[row['CENTROID_Y'], row['CENTROID_X']],
+        popup=(
+            f"Market Area: {row['Market_Cluster_ID']}<br>"
+        ),
+        icon=folium.Icon(color='blue', icon='info-sign')
+    ).add_to(map_clusters)
+
+# Create feature groups for each market cluster
+cluster_groups = {}
+for cluster_id in IntMapData['Market_Cluster_ID'].unique():
+    cluster_groups[cluster_id] = folium.FeatureGroup(name=f"Cluster {cluster_id}")
+
+# Add properties to respective groups
+for _, row in IntMapData.iterrows():
+    marker = folium.Marker(
+        location=[row['CENTROID_Y'], row['CENTROID_X']],
+        popup=f"Cluster: {row['Market_Cluster_ID']}",
+        icon=folium.Icon(color='blue', icon='info-sign')
+    )
+    cluster_groups[row['Market_Cluster_ID']].add_child(marker)
+
+# Add groups to the map
+for group in cluster_groups.values():
+    map_clusters.add_child(group)
+
+# Add a layer control to toggle groups
+folium.LayerControl().add_to(map_clusters)
+
+# Display map in Jupyter Notebook
+map_clusters
+
+# Save to HTML
+map_clusters.save("market_clusters_map.html")
+
+# %%
+import folium
+from folium.plugins import MarkerCluster
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+
+# Use the provided MapData as IntMapData
+IntMapData = MapData
+
+# Calculate the mean latitude and longitude
+center_lat = IntMapData['CENTROID_Y'].mean()
+center_lon = IntMapData['CENTROID_X'].mean()
+
+# Create the map centered on the mean location
+map_clusters = folium.Map(location=[center_lat, center_lon], zoom_start=6, tiles='OpenStreetMap')
+
+# Generate 40 unique colors using the updated Matplotlib colormaps API
+cmap = plt.colormaps["tab20"]  # Tab20 colormap for distinct colors
+color_list = [mcolors.rgb2hex(cmap(i / 40)) for i in range(40)]
+
+# Assign unique colors to each Market_Cluster_ID
+unique_clusters = IntMapData['Market_Cluster_ID'].unique()
+cluster_colors = {
+    cluster_id: color for cluster_id, color in zip(
+        unique_clusters, color_list[:len(unique_clusters)]
+    )
+}
+
+# Automatically calculate map bounds
+min_lat, max_lat = IntMapData['CENTROID_Y'].min(), IntMapData['CENTROID_Y'].max()
+min_lon, max_lon = IntMapData['CENTROID_X'].min(), IntMapData['CENTROID_X'].max()
+
+# Fit map to bounds
+map_clusters.fit_bounds([[min_lat, min_lon], [max_lat, max_lon]])
+
+# Create feature groups for each market cluster
+cluster_groups = {}
+for cluster_id in unique_clusters:
+    cluster_groups[cluster_id] = folium.FeatureGroup(name=f"Cluster {cluster_id}")
+    marker_cluster = MarkerCluster()  # Add clustering to the layer group
+    cluster_groups[cluster_id].add_child(marker_cluster)
+
+    # Add properties to the respective cluster
+    cluster_data = IntMapData[IntMapData['Market_Cluster_ID'] == cluster_id]
+    for _, row in cluster_data.iterrows():
+        folium.Marker(
+            location=[row['CENTROID_Y'], row['CENTROID_X']],
+            popup=(
+                f"Market Area: {row['Market_Cluster_ID']}<br>"
+            ),
+            icon=folium.Icon(color=cluster_colors.get(cluster_id, 'gray'), icon='info-sign')
+        ).add_to(marker_cluster)
+
+# Add feature groups to the map
+for group in cluster_groups.values():
+    map_clusters.add_child(group)
+
+# Add a layer control to toggle groups
+folium.LayerControl().add_to(map_clusters)
+
+# Save to HTML
+map_clusters.save("market_clusters_map.html")
+
+
+# %%
+import folium
+from folium.plugins import MarkerCluster
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+
+# Use the provided MapData as IntMapData
+IntMapData = MapData
+
+# Calculate the mean latitude and longitude
+center_lat = IntMapData['CENTROID_Y'].mean()
+center_lon = IntMapData['CENTROID_X'].mean()
+
+# Create the map centered on the mean location
+map_clusters = folium.Map(location=[center_lat, center_lon], zoom_start=6, tiles='OpenStreetMap')
+
+# Generate 40 unique colors using the updated Matplotlib colormaps API
+cmap = plt.colormaps["tab20"]  # Tab20 colormap for distinct colors
+color_list = [mcolors.rgb2hex(cmap(i / 40)) for i in range(40)]
+
+# Assign unique colors to each Market_Cluster_ID
+unique_clusters = IntMapData['Market_Cluster_ID'].unique()
+cluster_colors = {
+    cluster_id: color for cluster_id, color in zip(
+        unique_clusters, color_list[:len(unique_clusters)]
+    )
+}
+
+# Automatically calculate map bounds
+min_lat, max_lat = IntMapData['CENTROID_Y'].min(), IntMapData['CENTROID_Y'].max()
+min_lon, max_lon = IntMapData['CENTROID_X'].min(), IntMapData['CENTROID_X'].max()
+
+# Fit map to bounds
+map_clusters.fit_bounds([[min_lat, min_lon], [max_lat, max_lon]])
+
+# Create a master toggle feature group
+master_group = folium.FeatureGroup(name="Toggle All", show=True)
+map_clusters.add_child(master_group)
+
+# Create feature groups for each market cluster
+cluster_groups = {}
+for cluster_id in unique_clusters:
+    cluster_groups[cluster_id] = folium.FeatureGroup(name=f"Cluster {cluster_id}", show=False)
+    marker_cluster = MarkerCluster()  # Add clustering to the layer group
+    cluster_groups[cluster_id].add_child(marker_cluster)
+
+    # Add properties to the respective cluster
+    cluster_data = IntMapData[IntMapData['Market_Cluster_ID'] == cluster_id]
+    for _, row in cluster_data.iterrows():
+        folium.Marker(
+            location=[row['CENTROID_Y'], row['CENTROID_X']],
+            popup=(
+                f"Market Area: {row['Market_Cluster_ID']}<br>"
+            ),
+            icon=folium.Icon(color=cluster_colors.get(cluster_id, 'gray'), icon='info-sign')
+        ).add_to(marker_cluster)
+
+    # Add each cluster group to the master group and the map
+    master_group.add_child(cluster_groups[cluster_id])
+    map_clusters.add_child(cluster_groups[cluster_id])
+
+# Add a layer control to toggle groups
+folium.LayerControl(collapsed=False).add_to(map_clusters)
+
+# Save to HTML
+map_clusters.save("market_clusters_map.html")
+
+# %%
+import folium
+from folium.plugins import MarkerCluster
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+
+# Use the provided MapData as IntMapData
+IntMapData = MapData
+
+# Calculate the mean latitude and longitude
+center_lat = IntMapData['CENTROID_Y'].mean()
+center_lon = IntMapData['CENTROID_X'].mean()
+
+# Create the map centered on the mean location
+map_clusters = folium.Map(location=[center_lat, center_lon], zoom_start=6, tiles='OpenStreetMap')
+
+# Generate 40 unique colors using the updated Matplotlib colormaps API
+cmap = plt.colormaps["tab20b"]  # Tab20b colormap for distinct colors
+color_list = [mcolors.rgb2hex(cmap(i / 40)) for i in range(40)]
+
+# Assign unique colors to each Market_Cluster_ID
+unique_clusters = IntMapData['Market_Cluster_ID'].unique()
+cluster_colors = {
+    cluster_id: color for cluster_id, color in zip(
+        unique_clusters, color_list[:len(unique_clusters)]
+    )
+}
+
+# Automatically calculate map bounds
+min_lat, max_lat = IntMapData['CENTROID_Y'].min(), IntMapData['CENTROID_Y'].max()
+min_lon, max_lon = IntMapData['CENTROID_X'].min(), IntMapData['CENTROID_X'].max()
+
+# Fit map to bounds
+map_clusters.fit_bounds([[min_lat, min_lon], [max_lat, max_lon]])
+
+# Create feature groups for each market cluster
+cluster_groups = {}
+for cluster_id in unique_clusters:
+    cluster_groups[cluster_id] = folium.FeatureGroup(name=f"Cluster {cluster_id}", show=True)
+    marker_cluster = MarkerCluster()  # Add clustering to the layer group
+    cluster_groups[cluster_id].add_child(marker_cluster)
+
+    # Add properties to the respective cluster
+    cluster_data = IntMapData[IntMapData['Market_Cluster_ID'] == cluster_id]
+    for _, row in cluster_data.iterrows():
+        folium.CircleMarker(
+            location=[row['CENTROID_Y'], row['CENTROID_X']],
+            radius=5,  # Size of the marker
+            color=cluster_colors.get(cluster_id, 'gray'),
+            fill=True,
+            fill_color=cluster_colors.get(cluster_id, 'gray'),
+            fill_opacity=0.8,
+            popup=(
+                f"Market Area: {row['Market_Cluster_ID']}<br>"
+            )
+        ).add_to(marker_cluster)
+
+    # Add each cluster group to the map
+    map_clusters.add_child(cluster_groups[cluster_id])
+
+# Add a layer control to toggle groups
+folium.LayerControl(collapsed=False).add_to(map_clusters)
+
+# Save to HTML
+map_clusters.save("market_clusters_map.html")
+
+# %%
+import folium
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+
+# Use the provided MapData as IntMapData
+IntMapData = MapData
+
+# Calculate the mean latitude and longitude
+center_lat = IntMapData['CENTROID_Y'].mean()
+center_lon = IntMapData['CENTROID_X'].mean()
+
+# Create the map centered on the mean location
+map_clusters = folium.Map(location=[center_lat, center_lon], zoom_start=6, tiles='OpenStreetMap')
+
+# Generate 40 unique colors using the updated Matplotlib colormaps API
+cmap = plt.colormaps["tab20b"]  # Tab20b colormap for distinct colors
+color_list = [mcolors.rgb2hex(cmap(i / 40)) for i in range(40)]
+
+# Assign unique colors to each Market_Cluster_ID
+unique_clusters = IntMapData['Market_Cluster_ID'].unique()
+cluster_colors = {
+    cluster_id: color for cluster_id, color in zip(
+        unique_clusters, color_list[:len(unique_clusters)]
+    )
+}
+
+# Automatically calculate map bounds
+min_lat, max_lat = IntMapData['CENTROID_Y'].min(), IntMapData['CENTROID_Y'].max()
+min_lon, max_lon = IntMapData['CENTROID_X'].min(), IntMapData['CENTROID_X'].max()
+
+# Fit map to bounds
+map_clusters.fit_bounds([[min_lat, min_lon], [max_lat, max_lon]])
+
+# Create feature groups for each market cluster
+cluster_groups = {}
+for cluster_id in unique_clusters:
+    cluster_groups[cluster_id] = folium.FeatureGroup(name=f"Cluster {cluster_id}", show=True)
+
+    # Add properties to the respective cluster
+    cluster_data = IntMapData[IntMapData['Market_Cluster_ID'] == cluster_id]
+    for _, row in cluster_data.iterrows():
+        folium.CircleMarker(
+            location=[row['CENTROID_Y'], row['CENTROID_X']],
+            radius=3,  # Smaller size for better visualization
+            color=cluster_colors.get(cluster_id, 'gray'),
+            fill=True,
+            fill_color=cluster_colors.get(cluster_id, 'gray'),
+            fill_opacity=0.8,
+            popup=(
+                f"Market Area: {row['Market_Cluster_ID']}<br>"
+            )
+        ).add_to(cluster_groups[cluster_id])
+
+    # Add each cluster group to the map
+    map_clusters.add_child(cluster_groups[cluster_id])
+
+# Add a "Toggle All" feature group
+toggle_all_group = folium.FeatureGroup(name="Toggle All", show=True)
+for group in cluster_groups.values():
+    toggle_all_group.add_child(group)
+map_clusters.add_child(toggle_all_group)
+
+# Add a layer control to toggle groups
+folium.LayerControl(collapsed=False).add_to(map_clusters)
+
+# Save to HTML
+map_clusters.save("market_clusters_map.html")
+# %%
+import folium
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+
+# Use the provided MapData as IntMapData
+IntMapData = MapData
+
+# Calculate the mean latitude and longitude
+center_lat = IntMapData['CENTROID_Y'].mean()
+center_lon = IntMapData['CENTROID_X'].mean()
+
+# Create the map centered on the mean location
+map_clusters = folium.Map(location=[center_lat, center_lon], zoom_start=6, tiles='OpenStreetMap')
+
+# Generate 40 unique colors using the updated Matplotlib colormaps API
+cmap = plt.colormaps["tab20b"]  # Tab20b colormap for distinct colors
+color_list = [mcolors.rgb2hex(cmap(i / 20)) for i in range(20)] * 2  # Repeat to ensure 40 colors
+
+# Assign unique colors to each Market_Cluster_ID
+unique_clusters = IntMapData['Market_Cluster_ID'].unique()
+cluster_colors = {
+    cluster_id: color for cluster_id, color in zip(
+        unique_clusters, color_list[:len(unique_clusters)]
+    )
+}
+
+# Automatically calculate map bounds
+min_lat, max_lat = IntMapData['CENTROID_Y'].min(), IntMapData['CENTROID_Y'].max()
+min_lon, max_lon = IntMapData['CENTROID_X'].min(), IntMapData['CENTROID_X'].max()
+
+# Fit map to bounds
+map_clusters.fit_bounds([[min_lat, min_lon], [max_lat, max_lon]])
+
+# Create feature groups for each market cluster
+cluster_groups = {}
+for cluster_id in unique_clusters:
+    cluster_groups[cluster_id] = folium.FeatureGroup(name=f"Cluster {cluster_id}", show=True)
+
+    # Add properties to the respective cluster
+    cluster_data = IntMapData[IntMapData['Market_Cluster_ID'] == cluster_id]
+    for _, row in cluster_data.iterrows():
+        folium.CircleMarker(
+            location=[row['CENTROID_Y'], row['CENTROID_X']],
+            radius=3,  # Smaller size for better visualization
+            color=cluster_colors.get(cluster_id, 'gray'),
+            fill=True,
+            fill_color=cluster_colors.get(cluster_id, 'gray'),
+            fill_opacity=0.8,
+            popup=f"<strong>Market Area:</strong> {row['Market_Cluster_ID']}"
+        ).add_to(cluster_groups[cluster_id])
+
+    # Add each cluster group to the map
+    map_clusters.add_child(cluster_groups[cluster_id])
+
+# Add a "Toggle All" feature group
+for group in cluster_groups.values():
+    map_clusters.add_child(group)
+
+# Add a layer control to toggle groups
+folium.LayerControl(collapsed=False).add_to(map_clusters)
+
+# Save to HTML
+map_clusters.save("market_clusters_map.html")
+
+# %%
+import folium
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+
+# Use the provided MapData as IntMapData
+IntMapData = MapData
+
+# Calculate the mean latitude and longitude
+center_lat = IntMapData['CENTROID_Y'].mean()
+center_lon = IntMapData['CENTROID_X'].mean()
+
+# Create the map centered on the mean location
+map_clusters = folium.Map(location=[center_lat, center_lon], zoom_start=6, tiles='OpenStreetMap')
+
+# Generate 40 unique colors using the updated Matplotlib colormaps API
+cmap = plt.colormaps["tab20b"]  # Tab20b colormap for distinct colors
+color_list = [mcolors.rgb2hex(cmap(i / 20)) for i in range(20)] * 2  # Repeat to ensure 40 colors
+
+# Assign unique colors to each Market_Cluster_ID
+unique_clusters = IntMapData['Market_Cluster_ID'].unique()
+cluster_colors = {
+    cluster_id: color for cluster_id, color in zip(
+        unique_clusters, color_list[:len(unique_clusters)]
+    )
+}
+
+# Automatically calculate map bounds
+min_lat, max_lat = IntMapData['CENTROID_Y'].min(), IntMapData['CENTROID_Y'].max()
+min_lon, max_lon = IntMapData['CENTROID_X'].min(), IntMapData['CENTROID_X'].max()
+
+# Fit map to bounds
+map_clusters.fit_bounds([[min_lat, min_lon], [max_lat, max_lon]])
+
+# Create feature groups for each market cluster
+cluster_groups = {}
+for cluster_id in unique_clusters:
+    cluster_groups[cluster_id] = folium.FeatureGroup(name=f"Cluster {cluster_id}", show=True)
+
+    # Add properties to the respective cluster
+    cluster_data = IntMapData[IntMapData['Market_Cluster_ID'] == cluster_id]
+    for _, row in cluster_data.iterrows():
+        folium.CircleMarker(
+            location=[row['CENTROID_Y'], row['CENTROID_X']],
+            radius=3,  # Smaller size for better visualization
+            color=cluster_colors.get(cluster_id, 'gray'),
+            fill=True,
+            fill_color=cluster_colors.get(cluster_id, 'gray'),
+            fill_opacity=0.8,
+            popup=f"<strong>Market Area:</strong> {row['Market_Cluster_ID']}"
+        ).add_to(cluster_groups[cluster_id])
+
+    # Add each cluster group to the map
+    map_clusters.add_child(cluster_groups[cluster_id])
+
+# Add a "Toggle All" feature group
+toggle_all_group = folium.FeatureGroup(name="Toggle All", show=True)
+map_clusters.add_child(toggle_all_group)
+for group in cluster_groups.values():
+    toggle_all_group.add_child(group)
+
+# Add a layer control to toggle groups
+folium.LayerControl(collapsed=False).add_to(map_clusters)
+
+# Save to HTML
+map_clusters.save("market_clusters_map.html")
+# %%
+import folium
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+
+# Use the provided MapData as IntMapData
+IntMapData = MapData
+
+# Calculate the mean latitude and longitude
+center_lat = IntMapData['CENTROID_Y'].mean()
+center_lon = IntMapData['CENTROID_X'].mean()
+
+# Create the map centered on the mean location
+map_clusters = folium.Map(location=[center_lat, center_lon], zoom_start=6, tiles='OpenStreetMap')
+
+# Generate 40 unique colors using the updated Matplotlib colormaps API
+cmap = plt.colormaps["tab20b"]  # Tab20b colormap for distinct colors
+color_list = [mcolors.rgb2hex(cmap(i / 20)) for i in range(20)] * 2  # Repeat to ensure 40 colors
+
+# Assign unique colors to each Market_Cluster_ID
+unique_clusters = IntMapData['Market_Cluster_ID'].unique()
+cluster_colors = {
+    cluster_id: color for cluster_id, color in zip(
+        unique_clusters, color_list[:len(unique_clusters)]
+    )
+}
+
+# Automatically calculate map bounds
+min_lat, max_lat = IntMapData['CENTROID_Y'].min(), IntMapData['CENTROID_Y'].max()
+min_lon, max_lon = IntMapData['CENTROID_X'].min(), IntMapData['CENTROID_X'].max()
+
+# Fit map to bounds
+map_clusters.fit_bounds([[min_lat, min_lon], [max_lat, max_lon]])
+
+# Create feature groups for each market cluster
+for cluster_id in unique_clusters:
+    cluster_group = folium.FeatureGroup(name=f"Cluster {cluster_id}", show=True)
+
+    # Add properties to the respective cluster
+    cluster_data = IntMapData[IntMapData['Market_Cluster_ID'] == cluster_id]
+    for _, row in cluster_data.iterrows():
+        folium.CircleMarker(
+            location=[row['CENTROID_Y'], row['CENTROID_X']],
+            radius=3,  # Smaller size for better visualization
+            color=cluster_colors.get(cluster_id, 'gray'),
+            fill=True,
+            fill_color=cluster_colors.get(cluster_id, 'gray'),
+            fill_opacity=0.8,
+            popup=f"<strong>Market Area:</strong> {row['Market_Cluster_ID']}"
+        ).add_to(cluster_group)
+
+    # Add the cluster group to the map
+    map_clusters.add_child(cluster_group)
+
+# Add a layer control to toggle groups
+folium.LayerControl(collapsed=False).add_to(map_clusters)
+
+# Save to HTML
+map_clusters.save("market_clusters_map.html")
+
+# %%
+import folium
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+
+# Use the provided MapData as IntMapData
+IntMapData = MapData
+
+# Calculate the mean latitude and longitude
+center_lat = IntMapData['CENTROID_Y'].mean()
+center_lon = IntMapData['CENTROID_X'].mean()
+
+# Create the map centered on the mean location
+map_clusters = folium.Map(location=[center_lat, center_lon], zoom_start=6, tiles='OpenStreetMap')
+
+# Generate 40 unique colors using the updated Matplotlib colormaps API
+cmap = plt.colormaps["tab20b"]  # Tab20b colormap for distinct colors
+color_list = [mcolors.rgb2hex(cmap(i / 20)) for i in range(20)] * 2  # Repeat to ensure 40 colors
+
+# Assign unique colors to each Market_Cluster_ID
+unique_clusters = IntMapData['Market_Cluster_ID'].unique()
+cluster_colors = {
+    cluster_id: color for cluster_id, color in zip(
+        unique_clusters, color_list[:len(unique_clusters)]
+    )
+}
+
+# Automatically calculate map bounds
+min_lat, max_lat = IntMapData['CENTROID_Y'].min(), IntMapData['CENTROID_Y'].max()
+min_lon, max_lon = IntMapData['CENTROID_X'].min(), IntMapData['CENTROID_X'].max()
+
+# Fit map to bounds
+map_clusters.fit_bounds([[min_lat, min_lon], [max_lat, max_lon]])
+
+# Create feature groups for each market cluster
+for cluster_id in unique_clusters:
+    cluster_group = folium.FeatureGroup(name=f"Cluster {cluster_id}", show=False)  # Default to off
+
+    # Add properties to the respective cluster
+    cluster_data = IntMapData[IntMapData['Market_Cluster_ID'] == cluster_id]
+    for _, row in cluster_data.iterrows():
+        folium.CircleMarker(
+            location=[row['CENTROID_Y'], row['CENTROID_X']],
+            radius=3,  # Smaller size for better visualization
+            color=cluster_colors.get(cluster_id, 'gray'),
+            fill=True,
+            fill_color=cluster_colors.get(cluster_id, 'gray'),
+            fill_opacity=0.8,
+            popup=f"<strong>Market Area:</strong> {row['Market_Cluster_ID']}"
+        ).add_to(cluster_group)
+
+    # Add the cluster group to the map
+    map_clusters.add_child(cluster_group)
+
+# Add a layer control to toggle groups
+folium.LayerControl(collapsed=False).add_to(map_clusters)
+
+# Save to HTML
+map_clusters.save("market_clusters_map.html")
+# %%
+# Create a copy of the result data for geospatial analysis
+MapData = result.copy()
+
+# Predict log-transformed assessment values for MapData
+MapData['predicted_log_Assessment_Val'] = regresult.predict(MapData)
+
+# Convert predicted log values to original scale
+MapData['predicted_Assessment_Val'] = np.exp(MapData['predicted_log_Assessment_Val'])
+
+# Calculate predicted market value by adding miscellaneous value
+MapData['predicted_Market_Val'] = MapData['predicted_Assessment_Val'] + MapData['MISC_Val']
+
+# Calculate residuals for market and assessment values
+MapData['Market_Residual'] = MapData['predicted_Market_Val'] - MapData['sl_price']
+MapData['Assessment_Residual'] = MapData['predicted_Assessment_Val'] - MapData['Assessment_Val']
+
+# Convert residuals to numeric and handle errors
+MapData['Market_Residual'] = pd.to_numeric(MapData['Market_Residual'], errors='coerce')
+MapData['Assessment_Residual'] = pd.to_numeric(MapData['Assessment_Residual'], errors='coerce')
+
+# Calculate absolute values of residuals
+MapData['AbsV_Market_Residual'] = MapData['Market_Residual'].abs()
+MapData['AbsV_Assessment_Residual'] = MapData['Assessment_Residual'].abs()
+
+# Calculate sale ratio
+MapData['sale_ratio'] = MapData['predicted_Market_Val'] / MapData['sl_price']
+
+# Group by Market_Cluster_ID to calculate metrics
+summary_stats = MapData.groupby('Market_Cluster_ID').agg(
+    count=('Market_Cluster_ID', 'size'),
+    mean_assessment=('Assessment_Val', 'mean'),
+    mean_sale_price=('sl_price', 'mean'),
+    mae_market_residual=('AbsV_Market_Residual', 'mean'),
+    mae_assessment_residual=('AbsV_Assessment_Residual', 'mean'),
+    median_sale_ratio=('sale_ratio', 'median'),
+    std_sale_ratio=('sale_ratio', 'std'),
+).reset_index()
+
+# Display the summary stats table
+from IPython.display import display
+print("Summary Statistics Table:")
+display(summary_stats)
