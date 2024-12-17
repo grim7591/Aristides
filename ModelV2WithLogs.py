@@ -113,6 +113,7 @@ result = result.drop(columns=['abs_subdv_cd', 'MA', 'Cluster ID'])
 # Convert 'prop_id' to string for consistency across dataframes
 result['prop_id'] = result['prop_id'].astype(str)
 
+'''
 # Effage overwrites
 result.loc[result['prop_id'].isin(['85636']), 'effective_age'] = (result['prop_val_yr'] - 1) - 1992
 result.loc[result['prop_id'].isin(['98109']), 'effective_age'] = (result['prop_val_yr'] - 1) - 1993
@@ -126,6 +127,9 @@ result.loc[result['prop_id'].isin(['66141']), 'effective_age'] = (result['prop_v
 result.loc[result['prop_id'].isin(['86173']), 'effective_age'] = (result['prop_val_yr'] - 1) - 1993
 result.loc[result['prop_id'].isin(['81469']), 'effective_age'] = (result['prop_val_yr'] - 1) - 1993
 result.loc[result['prop_id'].isin(['95004']), 'effective_age'] = (result['prop_val_yr'] - 1) - 1993
+'''
+# Set all effective_age values > 10 to 10
+result['effective_age'] = result['effective_age'].apply(lambda x: 30 if x > 30 else x)
 
 # Factor Engineer Percent Good based on effective age
 print("Calculating percent good based on effective age...")
