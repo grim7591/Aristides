@@ -723,65 +723,64 @@ summary_stats_era.to_csv('summary_stats_era.csv')
 print("Summary stats stratified by 'era_built' and other variables saved as 'summary_stats_era.csv'")
 
 # %%
-import pandas as pd
-import numpy as np
+# ✅ Step 1: Identify Valid Strata from Existing Output
+valid_strata = summary_stats_era[['tax_area_description', 'Market_Cluster_ID', 'era_built', 'imprv_det_quality_cd']].drop_duplicates()
 
-# Ensure floats are displayed with 2 decimal places
-pd.options.display.float_format = '{:.2f}'.format
+# ✅ Step 2: Filter MapData for These Valid Strata
+MapData_valid = MapData.merge(
+    valid_strata,
+    on=['tax_area_description', 'Market_Cluster_ID', 'era_built', 'imprv_det_quality_cd'],
+    how='inner'
+)
 
-# Check if 'predicted_Assessment_Val' exists
-if 'predicted_Assessment_Val' not in MapData.columns:
-    raise ValueError("Column 'predicted_Assessment_Val' is missing from MapData!")
+# ✅ Step 3: Calculate IAAO Metrics per Valid Stratum
+def calculate_iaao_metrics(group):
+    strat_actual_values = group['sl_price']
+    strat_predicted_values = group['predicted_Assessment_Val'] + group['MISC_Val']
+    
+    # Filter valid data
+    valid_idx = (~strat_actual_values.isna()) & (~strat_predicted_values.isna()) & (strat_actual_values != 0)
+    strat_actual_values = strat_actual_values[valid_idx]
+    strat_predicted_values = strat_predicted_values[valid_idx]
+    
+    if len(strat_actual_values) == 0 or len(strat_predicted_values) == 0:
+        return pd.Series({
+            'PRD': np.nan,
+            'COD': np.nan,
+            'PRB': np.nan
+        })
 
-# Check groups with missing predictions
-missing_predictions = (
-    MapData
+    return pd.Series({
+        'PRD': PRD(strat_predicted_values, strat_actual_values),
+        'COD': COD(strat_predicted_values, strat_actual_values),
+        'PRB': PRB(strat_predicted_values, strat_actual_values)
+    })
+
+# ✅ Step 4: Apply Metrics to Each Group
+iaao_metrics = (
+    MapData_valid
     .groupby([
         'tax_area_description', 
         'Market_Cluster_ID', 
         'era_built', 
         'imprv_det_quality_cd'
-    ])
-    .filter(lambda group: group['predicted_Assessment_Val'].isna().any())
+    ], observed=False, dropna=False)
+    .apply(calculate_iaao_metrics)
+    .reset_index()
 )
 
-if not missing_predictions.empty:
-    print(f"Warning: {missing_predictions.shape[0]} rows are missing 'predicted_Assessment_Val'.")
-    print("Dropping these groups for clean metric calculations.")
-    # Drop groups with missing predictions
-    MapData = MapData.drop(missing_predictions.index)
+# ✅ Step 5: Merge IAAO Metrics Back to Summary Stats
+summary_stats_era = summary_stats_era.merge(
+    iaao_metrics,
+    on=['tax_area_description', 'Market_Cluster_ID', 'era_built', 'imprv_det_quality_cd'],
+    how='left'
+)
 
+# ✅ Step 6: Save the Enhanced Output
+summary_stats_era.to_csv('summary_stats_era_with_IAAO_metrics.csv', index=False)
+print("✅ Stratified summary stats with PRD, COD, PRB saved as 'summary_stats_era_with_IAAO_metrics.csv'")
 # %%
-def calculate_metrics(group):
-    predicted = group['predicted_Assessment_Val']
-    actual = group['Assessment_Val']
-    
-    # Filter valid data
-    valid_idx = (~predicted.isna()) & (~actual.isna()) & (actual != 0)
-    predicted = predicted[valid_idx]
-    actual = actual[valid_idx]
-    
-    if len(predicted) == 0 or len(actual) == 0:
-        return pd.Series({
-            'PRD': np.nan,
-            'COD': np.nan,
-            'PRB': np.nan,
-            'weightedMean': np.nan,
-            'meanRatio': np.nan,
-            'medianRatio': np.nan
-        })
-
-    return pd.Series({
-        'PRD': PRD(predicted, actual),
-        'COD': COD(predicted, actual),
-        'PRB': PRB(predicted_values, actual_values),
-        'weightedMean': weightedMean(predicted, actual),
-        'meanRatio': (predicted / actual).mean(),
-        'medianRatio': (predicted / actual).median()
-    })
-
-# %%
-# Group by stratified variables and calculate metrics
+# ✅ Step 1: Calculate Summary Statistics for Each Stratum
 summary_stats_era = (
     MapData
     .groupby([
@@ -790,93 +789,68 @@ summary_stats_era = (
         'era_built', 
         'imprv_det_quality_cd'
     ], observed=False, dropna=False)
-    .apply(
-        lambda group: calculate_metrics(group), 
-        include_groups=True
+    .agg(
+        count=('sale_ratio', 'count'),
+        mean=('sale_ratio', 'mean'),
+        std=('sale_ratio', 'std'),
+        min=('sale_ratio', 'min'),
+        _25=('sale_ratio', lambda x: x.quantile(0.25)),
+        _50=('sale_ratio', 'median'),
+        _75=('sale_ratio', lambda x: x.quantile(0.75)),
+        max=('sale_ratio', 'max')
     )
-    .reset_index()
+    .reset_index()  # Explicitly flatten the index
 )
 
-# Save to CSV
-summary_stats_era.to_csv('summary_stats_era_with_metrics.csv', index=False)
-print("✅ Summary stats with PRD, COD, PRB, and other metrics saved as 'summary_stats_era_with_metrics.csv'")
-# %%
-# ✅ Updated Metrics Calculation Function
-def calculate_metrics(group):
-    predicted = group['predicted_Assessment_Val']
-    actual = group['Assessment_Val']
-    
-    # Filter valid data
-    valid_idx = (~predicted.isna()) & (~actual.isna()) & (actual != 0)
-    predicted = predicted[valid_idx]
-    actual = actual[valid_idx]
-    
-    if len(predicted) == 0 or len(actual) == 0:
-        return pd.Series({
-            'count': 0,
-            'mean': np.nan,
-            'std': np.nan,
-            'min': np.nan,
-            '25%': np.nan,
-            '50%': np.nan,
-            '75%': np.nan,
-            'max': np.nan,
-            'median': np.nan,
-            'PRD': np.nan,
-            'COD': np.nan,
-            'PRB': np.nan,
-            'weightedMean': np.nan,
-            'meanRatio': np.nan,
-            'medianRatio': np.nan
-        })
+# 🚨 Sanity Check 1
+print("Step 1 Complete: Columns in summary_stats_era are:", summary_stats_era.columns)
 
-    # Summary Statistics
-    summary_stats = predicted.describe()
-    median = predicted.median()
-    
-    return pd.Series({
-        # Summary Stats
-        'count': summary_stats['count'],
-        'mean': summary_stats['mean'],
-        'std': summary_stats['std'],
-        'min': summary_stats['min'],
-        '25%': summary_stats['25%'],
-        '50%': summary_stats['50%'],
-        '75%': summary_stats['75%'],
-        'max': summary_stats['max'],
-        'median': median,
-        # IAAO Metrics
-        'PRD': PRD(predicted, actual),
-        'COD': COD(predicted, actual),
-        'PRB': PRB(predicted, actual),
-        'weightedMean': weightedMean(predicted, actual),
-        'meanRatio': (predicted / actual).mean(),
-        'medianRatio': (predicted / actual).median()
-    })
+# ✅ Step 2: Filter Out Empty Strata
+summary_stats_era = summary_stats_era[summary_stats_era['count'] > 0].reset_index(drop=True)
 
-# Filter out rows with nulls in any grouping key
-MapData_filtered = MapData.dropna(
-    subset=['tax_area_description', 'Market_Cluster_ID', 'era_built', 'imprv_det_quality_cd']
-)
+# ✅ Step 3: Ensure No Extra Rows Are Added
+valid_strata = summary_stats_era[['tax_area_description', 'Market_Cluster_ID', 'era_built', 'imprv_det_quality_cd']].drop_duplicates()
 
+# ✅ Step 4: Filter MapData for Valid Strata
+MapData_valid = MapData.merge(
+    valid_strata,
+    on=['tax_area_description', 'Market_Cluster_ID', 'era_built', 'imprv_det_quality_cd'],
+    how='inner'
+).drop_duplicates()
 
-# ✅ Grouping and Metrics Calculation
-summary_stats_era = (
-    MapData
+# ✅ Step 5: Calculate IAAO Metrics for Each Valid Stratum
+iaao_metrics = (
+    MapData_valid
     .groupby([
         'tax_area_description', 
         'Market_Cluster_ID', 
         'era_built', 
         'imprv_det_quality_cd'
     ], observed=False, dropna=False)
-    .apply(lambda group: calculate_metrics(
-        group.drop(columns=['tax_area_description', 'Market_Cluster_ID', 'era_built', 'imprv_det_quality_cd'], errors='ignore')
-    ), include_groups=False)  # Explicitly exclude grouping columns
-    .reset_index()
+    .apply(lambda group: calculate_iaao_metrics(group.reset_index(drop=True)), include_groups=False)
+    .reset_index()  # Flatten index
 )
 
-# ✅ Save to CSV
-summary_stats_era.to_csv('summary_stats_era_with_metrics.csv', index=False)
-print("✅ Summary stats with PRD, COD, PRB, and other metrics saved as 'summary_stats_era_with_metrics.csv'")
+# 🚨 Sanity Check 3
+print("Step 5 Complete: Columns in iaao_metrics are:", iaao_metrics.columns)
 
+# ✅ Step 6: Merge IAAO Metrics into Summary Stats
+summary_stats_era = summary_stats_era.merge(
+    iaao_metrics,
+    on=['tax_area_description', 'Market_Cluster_ID', 'era_built', 'imprv_det_quality_cd'],
+    how='left'
+).reset_index(drop=True)
+
+# ✅ Step 7: Final Cleanup and Validation
+summary_stats_era = summary_stats_era.drop_duplicates(subset=['tax_area_description', 'Market_Cluster_ID', 'era_built', 'imprv_det_quality_cd'])
+
+# 🚨 Final Sanity Check
+assert len(summary_stats_era) == len(valid_strata), (
+    "Mismatch in final row counts after merging IAAO metrics. "
+    f"Expected {len(valid_strata)}, but got {len(summary_stats_era)}"
+)
+
+# ✅ Step 8: Save the Enhanced Output
+summary_stats_era.to_csv('summary_stats_era_with_IAAO_metrics.csv', index=False)
+print("✅ Stratified summary stats with PRD, COD, PRB saved as 'summary_stats_era_with_IAAO_metrics.csv'")
 # %%
