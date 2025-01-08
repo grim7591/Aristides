@@ -228,11 +228,9 @@ result['percent_good'] = 1 - (result['effective_age']/ 100)
 # %%
 result.loc[result['prop_id'].isin(['96615']), 'imprv_det_quality_cd'] = 1
 
-result.loc[result['prop_id'].isin(['96411']), 'imprv_det_quality_cd'] = 2
+result.loc[result['prop_id'].isin(['96411', '13894', '8894']), 'imprv_det_quality_cd'] = 2
 
-result.loc[result['prop_id'].isin(['13894']), 'imprv_det_quality_cd'] = 2
-
-result.loc[result['prop_id'].isin(['8894']), 'imprv_det_quality_cd'] = 2
+result.loc[result['prop_id'].isin(['91562', '73909']), 'imprv_det_quality_cd'] = 3
 
 result.loc[result['prop_id'].isin(['19165']), 'imprv_det_quality_cd'] = 4
 
