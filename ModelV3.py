@@ -81,7 +81,7 @@ print("Loading data from CSV files...")
 
 # Load data from multiple CSV files
 market_areas = pd.read_csv('Data/normalizedMAs.csv')
-sale_data = pd.read_csv("Data/dp53.csv")
+sale_data = pd.read_csv("Data/dp54.csv")
 
 Haile = pd.read_csv("Data/Haile.csv")
 High_Springs_Main = pd.read_csv("Data/High_Springs_Main.csv")
@@ -112,6 +112,7 @@ CarolEstates = pd.read_csv("Data/CarolEstates.csv")
 Westchesterish = pd.read_csv("Data/Westchesterish.csv")
 QuailCreekish = pd.read_csv("Data/QuailCreekish.csv")
 Gainesvilleish_Region_2 = pd.read_csv("Data/Gainesville_Region_2.csv")
+Jonesville = pd.read_csv("Data/Jonesville.csv")
 # Clean the market area and sale data
 print("Cleaning market area and sale data...")
 
@@ -300,6 +301,7 @@ CarolEstates['prop_id'] = CarolEstates['prop_id'].astype(str)
 Westchesterish['prop_id'] = Westchesterish['prop_id'].astype(str)
 QuailCreekish['prop_id'] = QuailCreekish['prop_id'].astype(str)
 Gainesvilleish_Region_2['prop_id'] = Gainesvilleish_Region_2['prop_id'].astype(str)
+Jonesville['prop_id'] = Jonesville['prop_id'].astype(str)
 
 # Assign new Market Cluster IDs based on subdivision membership and tax area description
 result.loc[result['prop_id'].isin(Haile['prop_id']), 'Market_Cluster_ID'] = 'HaileLike'
@@ -335,6 +337,7 @@ result.loc[result['prop_id'].isin(CarolEstates['prop_id']), 'Market_Cluster_ID']
 result.loc[result['prop_id'].isin(Westchesterish['prop_id']), 'Market_Cluster_ID'] = 'Westchesterish'
 result.loc[result['prop_id'].isin(QuailCreekish['prop_id']), 'Market_Cluster_ID'] = 'QuailCreekish'
 result.loc[result['prop_id'].isin(Gainesvilleish_Region_2['prop_id']), 'Market_Cluster_ID'] = 'Gainesvilleish_Region'
+result.loc[result['prop_id'].isin(Jonesville['prop_id']), 'Market_Cluster_ID'] = 'Jonesville'
 
 # Keep the first occurrence of each duplicate prop_id, only needed for PID 99411 which is duped for some reason
 result = result.drop_duplicates(subset='prop_id', keep='first')
