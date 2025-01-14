@@ -81,7 +81,7 @@ print("Loading data from CSV files...")
 
 # Load data from multiple CSV files
 market_areas = pd.read_csv('Data/normalizedMAs.csv')
-sale_data = pd.read_csv("Data/dp54.csv")
+sale_data = pd.read_csv("Data/dp55.csv")
 
 Haile = pd.read_csv("Data/Haile.csv")
 High_Springs_Main = pd.read_csv("Data/High_Springs_Main.csv")
@@ -113,6 +113,7 @@ Westchesterish = pd.read_csv("Data/Westchesterish.csv")
 QuailCreekish = pd.read_csv("Data/QuailCreekish.csv")
 Gainesvilleish_Region_2 = pd.read_csv("Data/Gainesville_Region_2.csv")
 Jonesville = pd.read_csv("Data/Jonesville.csv")
+lincoln_estates = pd.read_csv("Data/lincoln_estates.csv")
 # Clean the market area and sale data
 print("Cleaning market area and sale data...")
 
@@ -258,12 +259,12 @@ result.loc[result['prop_id'].isin(['19165']), 'imprv_det_quality_cd'] = 4
 print("Linearizing quality codes...")
 # Replace quality codes with numerical values for linear regression
 result['imprv_det_quality_cd'] = result['imprv_det_quality_cd'].replace({
-    1: 0.75,
-    2: 0.90,
-    3: 1.00,
-    4: 1.15,
-    5: 1.40,
-    6: 1.70
+    1: 0.1331291,
+    2: 0.5665645,
+    3: 1.0,
+    4: 1.1624432,
+    5: 1.4343298,
+    6: 1.7062164
 })
 
 # %% [markdown]
@@ -302,6 +303,7 @@ Westchesterish['prop_id'] = Westchesterish['prop_id'].astype(str)
 QuailCreekish['prop_id'] = QuailCreekish['prop_id'].astype(str)
 Gainesvilleish_Region_2['prop_id'] = Gainesvilleish_Region_2['prop_id'].astype(str)
 Jonesville['prop_id'] = Jonesville['prop_id'].astype(str)
+lincoln_estates['prop_id'] = lincoln_estates['prop_id'].astype(str)
 
 # Assign new Market Cluster IDs based on subdivision membership and tax area description
 result.loc[result['prop_id'].isin(Haile['prop_id']), 'Market_Cluster_ID'] = 'HaileLike'
@@ -338,6 +340,7 @@ result.loc[result['prop_id'].isin(Westchesterish['prop_id']), 'Market_Cluster_ID
 result.loc[result['prop_id'].isin(QuailCreekish['prop_id']), 'Market_Cluster_ID'] = 'QuailCreekish'
 result.loc[result['prop_id'].isin(Gainesvilleish_Region_2['prop_id']), 'Market_Cluster_ID'] = 'Gainesvilleish_Region'
 result.loc[result['prop_id'].isin(Jonesville['prop_id']), 'Market_Cluster_ID'] = 'Jonesville'
+result.loc[result['prop_id'].isin(lincoln_estates['prop_id']), 'Market_Cluster_ID'] = 'Lincoln_Estates'
 
 # Keep the first occurrence of each duplicate prop_id, only needed for PID 99411 which is duped for some reason
 result = result.drop_duplicates(subset='prop_id', keep='first')
@@ -458,12 +461,12 @@ display(HTML(map_clusters._repr_html_()))
 # %%
 # Undo the linearization of quality codes
 result['imprv_det_quality_cd'] = result['imprv_det_quality_cd'].replace({
-    0.75: 1,
-    0.90: 2,
-    1.00: 3,
-    1.15: 4,
-    1.40: 5,
-    1.70: 6
+    0.1331291: 1,
+    0.5665645: 2,
+    1.0: 3,
+    1.1624432: 4,
+    1.4343298: 5,
+    1.7062164: 6
 })
 
 # Group by Market_Cluster_ID to calculate metrics
@@ -527,7 +530,7 @@ result.columns = result.columns.astype(str)
 # regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area) + np.log(landiness) + np.log(percent_good) + np.log(imprv_det_quality_cd) + np.log(total_porch_area + 1) + np.log(total_garage_area + 1) + Springtree_B + HighSprings_A + MidtownEast_C + swNewberry_B + MidtownEast_A + swNewberry_A + MidtownEast_B + HighSprings_F + Springtree_A + Tioga_B + Tioga_A + MidtownEast_D + WaldoRural_A + Alachua_Main + High_Springs_Main + HaileLike + HighSprings_B + Real_Tioga + Duck_Pond + Newmans_Lake + EastMidtownEastA + HighSpringsAGNV + Hawthorne + HighSprings_B + Golfview + Lugano + Archer + WildsPlantation+Buck_Bay+in_subdivision+has_lake+WaldoRural_C+HighSprings_E+HSBUI+number_of_baths+EastGNV+Ironwood+SummerCreek+has_canal+TC_Forest+CarolEstates+Westchesterish+QuailCreekish"
 
 # %%
-regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area) + np.log(landiness) + np.log(percent_good) + np.log(imprv_det_quality_cd) + np.log(total_porch_area + 1) + np.log(total_garage_area + 1) + Springtree_B + HighSprings_A + MidtownEast_C + swNewberry_B + MidtownEast_A + swNewberry_A + MidtownEast_B + HighSprings_F + Springtree_A + Tioga_B + Tioga_A + MidtownEast_D + WaldoRural_A + Alachua_Main + High_Springs_Main + HaileLike + HighSprings_B + Real_Tioga + Duck_Pond + Newmans_Lake + EastMidtownEastA + HighSpringsAGNV + Hawthorne + HighSprings_B + Golfview + Lugano + Archer + WildsPlantation+Buck_Bay+in_subdivision+has_lake+WaldoRural_C+HighSprings_E+HSBUI+number_of_baths+EastGNV+Ironwood+SummerCreek+has_canal+TC_Forest+CarolEstates+Westchesterish+QuailCreekish"
+regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area) + np.log(landiness) + np.log(percent_good) + np.log(imprv_det_quality_cd) + np.log(total_porch_area + 1) + np.log(total_garage_area + 1) + Springtree_B + HighSprings_A + MidtownEast_C + swNewberry_B + MidtownEast_A + swNewberry_A + MidtownEast_B + HighSprings_F + Springtree_A + Tioga_B + Tioga_A + MidtownEast_D + WaldoRural_A + Alachua_Main + High_Springs_Main + HaileLike + HighSprings_B + Real_Tioga + Duck_Pond + Newmans_Lake + EastMidtownEastA + HighSpringsAGNV + Hawthorne + HighSprings_B + Golfview + Lugano + Archer + WildsPlantation+Buck_Bay+in_subdivision+has_lake+WaldoRural_C+HighSprings_E+HSBUI+number_of_baths+EastGNV+Ironwood+SummerCreek+has_canal+TC_Forest+CarolEstates+Westchesterish+QuailCreekish+Jonesville+Lincoln_Estates"
 # %% [markdown]
 # ### Train/Test Split
 # The data is split into training and testing sets. The training data is used to inform the model, the test data is used to check the performance of the trained model. The split takes out a random 20% of the properties to use for testing but for my purposes I've been using the same random seed so that variation in the results is from changes I make to the model and not from just getting a different seed. I believe the plan in the future will be to run the model on multiple seeds.
@@ -536,7 +539,7 @@ regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area) + np.log(landi
 # Split data into training and test sets
 print("Splitting data into training and test sets...")
 test_size_var = 0.2
-train_data, test_data = train_test_split(result, test_size=test_size_var, random_state=42)
+train_data, test_data = train_test_split(result, test_size=test_size_var, random_state=25)
 
 # %% [markdown]
 # ### Regression run
