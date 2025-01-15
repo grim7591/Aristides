@@ -858,3 +858,20 @@ assert len(summary_stats_era) == len(valid_strata), (
 summary_stats_era.to_csv('summary_stats_era_with_IAAO_metrics.csv', index=False)
 print("✅ Stratified summary stats with PRD, COD, PRB saved as 'summary_stats_era_with_IAAO_metrics.csv'")
 # %%
+# Calculate Q1, Q3, and IQR
+Q1 = MapData['sale_ratio'].quantile(0.25)
+Q3 = MapData['sale_ratio'].quantile(0.75)
+IQR = Q3 - Q1
+
+# Define lower and upper bounds
+lower_bound = Q1 - 1.5 * IQR
+upper_bound = Q3 + 1.5 * IQR
+
+# Filter data within the bounds
+outliers2_df = MapData[(MapData['sale_ratio'] < lower_bound) | (MapData['sale_ratio'] > upper_bound)]
+
+
+print("Filtered DataFrame:")
+print(outliers2_df)
+outliers2_df.to_csv('15IQR.csv')
+# %%
