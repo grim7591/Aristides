@@ -81,7 +81,7 @@ print("Loading data from CSV files...")
 
 # Load data from multiple CSV files
 market_areas = pd.read_csv('Data/normalizedMAs.csv')
-sale_data = pd.read_csv("Data/dp57.csv")
+sale_data = pd.read_csv("Data/dp59.csv")
 
 Haile = pd.read_csv("Data/Haile.csv")
 High_Springs_Main = pd.read_csv("Data/High_Springs_Main.csv")
@@ -539,7 +539,7 @@ regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area) + np.log(landi
 # Split data into training and test sets
 print("Splitting data into training and test sets...")
 test_size_var = 0.2
-train_data, test_data = train_test_split(result, test_size=test_size_var, random_state=25)
+train_data, test_data = train_test_split(result, test_size=test_size_var, random_state=42)
 
 # %% [markdown]
 # ### Regression run
