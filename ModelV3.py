@@ -81,7 +81,7 @@ print("Loading data from CSV files...")
 
 # Load data from multiple CSV files
 market_areas = pd.read_csv('Data/normalizedMAs.csv')
-sale_data = pd.read_csv("Data/dp58.csv")
+sale_data = pd.read_csv("Data/dp62.csv")
 
 Haile = pd.read_csv("Data/Haile.csv")
 High_Springs_Main = pd.read_csv("Data/High_Springs_Main.csv")
@@ -623,7 +623,7 @@ print(f"medianRatio: {medianRatio}")
 # - Need subject matter experts to review some of the other 1.5 * IQR outliers
 # - Need a way to assign market clusters to properties that aren't in the sale data for when we eventually deploy this. Working on a mix of random forest prediction model with some kind of spatial component and then some neighborhoods we could probably just cut by hand.
 # - Whatever Michael tells me to do
-
+# %%
 # Here's the other junk I need that wasn't in the first report.
 # %% Geospatial Analysis
 print("Performing geospatial analysis...")
@@ -876,4 +876,24 @@ outliers2_df = MapData[(MapData['sale_ratio'] < lower_bound) | (MapData['sale_ra
 print("Filtered DataFrame:")
 print(outliers2_df)
 outliers2_df.to_csv('15IQR.csv')
+# %%
+counts = MapData.groupby(['Market_Cluster_ID', 'hood_cd']).size().reset_index(name='count')
+pivot_table = counts.pivot(index='Market_Cluster_ID', columns='hood_cd', values='count').fillna(0)
+print(pivot_table)
+pivot_table.to_csv('market_cluster_hood_cd_counts.csv')
+# %%
+# Filter the counts DataFrame for rows with count > 0
+filtered_counts = counts[counts['count'] > 0]
+
+# Group by Market_Cluster_ID and aggregate hood_cd into a list
+market_to_hoods = filtered_counts.groupby('Market_Cluster_ID')['hood_cd'].apply(list).to_dict()
+
+# Print the result
+for cluster_id, hood_list in market_to_hoods.items():
+    print(f"Market_Cluster_ID {cluster_id}: {hood_list}")
+
+# Optional: Save to a text file if needed
+with open('market_cluster_to_hood_cd.txt', 'w') as file:
+    for cluster_id, hood_list in market_to_hoods.items():
+        file.write(f"Market_Cluster_ID {cluster_id}: {hood_list}\n")
 # %%

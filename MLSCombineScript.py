@@ -9,7 +9,7 @@ base_dir = "Data"
 dataframes = []
 
 # Loop through file numbers 1 to 22
-for i in range(1, 22):
+for i in range(24, 30):
     file_name = f"MyDisplay ({i}).csv"
     file_path = os.path.join(base_dir, file_name)
 
@@ -28,7 +28,7 @@ pattern = re.compile(r"^\d{11}$|^\d{5}-\d{3}-\d{3}$")
 combined_df["cleaning"] = combined_df["Tax ID"].apply(lambda x: bool(pattern.match(x)) if pd.notnull(x) else False)
 
 # Save the combined DataFrame to a new CSV file
-output_path = os.path.join(base_dir, "Combined_Data.csv")
+output_path = os.path.join(base_dir, "Combined_Data2024.csv")
 combined_df.to_csv(output_path, index=False)
 
 print(f"Combined CSV saved to {output_path}")
