@@ -77,84 +77,17 @@ from PlotPlotter import PlotPlotter
 import matplotlib.pyplot as plt
 
 # Load the data
-print("Loading data from CSV files...")
-
-# Load data from multiple CSV files
-market_areas = pd.read_csv('Data/normalizedMAs.csv')
-sale_data = pd.read_csv("Data/dp62.csv")
-
-Haile = pd.read_csv("Data/Haile.csv")
-High_Springs_Main = pd.read_csv("Data/High_Springs_Main.csv")
-Turkey_Creek = pd.read_csv("Data/Turkey_Creek.csv")
-Alachua_Main = pd.read_csv("Data/Alachua_Main.csv")
-Gainesvilleish_Region = pd.read_csv("Data/Gainesvilleish_Region.csv")
-Real_Tioga = pd.read_csv("Data/Real_Tioga.csv")
-Duck_Pond = pd.read_csv("Data/DuckPond.csv")
-Newmans_Lake = pd.read_csv("Data/Newmans_Lake.csv")
-EastMidtownEastA = pd.read_csv("Data/EastMidtownEastA.csv")
-HighSpringsAGNV = pd.read_csv("Data/HighSpringsAGNV.csv")
-Golfview = pd.read_csv("Data/Golfview.csv")
-Lugano = pd.read_csv("Data/Lugano.csv")
-Archer = pd.read_csv("Data/Archer.csv")
-WildsPlantation = pd.read_csv("Data/WildsPlantation.csv")
-Greystone = pd.read_csv("Data/Greystone.csv")
-Eagle_Point = pd.read_csv("Data/Eagle_Point.csv")
-Near_Haile = pd.read_csv("Data/Near_Haile.csv")
-Buck_Bay = pd.read_csv("Data/Buck_Bay.csv")
-Ironwood = pd.read_csv("Data/Ironwood.csv")
-Serenola = pd.read_csv("Data/Serenola.csv")
-BluesCreek = pd.read_csv("Data/BluesCreek.csv")
-Edgemoore = pd.read_csv("Data/Edgemoore.csv")
-SummerCreek = pd.read_csv("Data/SummerCreek.csv")
-EastGNV = pd.read_csv("Data/EastGNV.csv")
-TC_Forest = pd.read_csv("Data/TC_Forest.csv")
-CarolEstates = pd.read_csv("Data/CarolEstates.csv")
-Westchesterish = pd.read_csv("Data/Westchesterish.csv")
-QuailCreekish = pd.read_csv("Data/QuailCreekish.csv")
-Gainesvilleish_Region_2 = pd.read_csv("Data/Gainesville_Region_2.csv")
-Jonesville = pd.read_csv("Data/Jonesville.csv")
-lincoln_estates = pd.read_csv("Data/lincoln_estates.csv")
-MidtownEast_C2 = pd.read_csv("Data/MidtownEast_C2.csv")
-# Clean the market area and sale data
-print("Cleaning market area and sale data...")
-
-# Select only relevant columns from market_areas
-market_areas = market_areas[['prop_id', 'MA', 'Cluster ID', 'CENTROID_X', 'CENTROID_Y', 'geo_id']]
-
-# Remove rows with missing values
-market_areas.dropna(inplace=True)
-
-# Filter out rows with '<Null>' values
-market_areas = market_areas[market_areas['MA'] != '<Null>']
-market_areas = market_areas[market_areas['prop_id'] != '<Null>']
-
-# Convert 'prop_id' to string type
-market_areas['prop_id'] = market_areas['prop_id'].astype(str)
-
-# Convert 'prop_id' in sale_data to string type
-sale_data['prop_id'] = sale_data['prop_id'].astype(str)
-
-# %% [markdown]
-# ## Factor Engineering
-# The next step is to modify some of the factors we took out of PACs to make them more useful for model training. 
-# 
-#  ### Creating Market_Cluster_ID
-#  Functionally there is only one location component and it's "Market Cluster ID". These clusters were cut out from the submarkets established in previous steps.
-
-# %%
-# Factor engineer "Market Cluster ID"
-print("Creating Market Cluster ID...")
-# Create a new column 'Market_Cluster_ID' by combining 'MA' and 'Cluster ID'
-market_areas['Market_Cluster_ID'] = market_areas['MA'].astype(str) + '_' + market_areas['Cluster ID'].astype(str)
-
+print("Loading data from CSV file...")
+result = pd.read_csv('Data/dp2124m.csv')
+result.rename(columns={'Name': 'Market_Cluster_ID'}, inplace=True)
 # %% [markdown]
 # ### Overwriting the sale price of some properties whose sales were miscoded in PACs
 
 # %%
-sale_data.loc[sale_data['prop_id'] == '84296', 'sl_price'] = 90000
-sale_data.loc[sale_data['prop_id'] == '79157', 'sl_price'] = 300000
-sale_data.loc[sale_data['prop_id'] == '93683', 'sl_price'] = 199800
-sale_data.loc[sale_data['prop_id'] == '93443', 'sl_price'] = 132500
+result.loc[result['prop_id'] == '84296', 'sl_price'] = 90000
+result.loc[result['prop_id'] == '79157', 'sl_price'] = 300000
+result.loc[result['prop_id'] == '93683', 'sl_price'] = 199800
+result.loc[result['prop_id'] == '93443', 'sl_price'] = 132500
 
 # %% [markdown]
 # ### Creating "Assessment_Val"
@@ -164,9 +97,9 @@ sale_data.loc[sale_data['prop_id'] == '93443', 'sl_price'] = 132500
 # Factor engineer "Assessment Val"
 print("Factor engineering Assessment Val...")
 # Calculate the 'Assessment_Val' based on the sale price and miscellaneous value
-sale_data['Assessment_Val'] = .85 * (sale_data['sl_price'] - (sale_data['MISC_Val'] / .85))
+result['Assessment_Val'] = .85 * (result['sl_price'] - (result['MISC_Val'] / .85))
 # Add a validation step to ensure 'Assessment_Val' is not negative
-sale_data['Assessment_Val'] = sale_data['Assessment_Val'].apply(lambda x: x if x > 0 else np.nan)
+result['Assessment_Val'] = result['Assessment_Val'].apply(lambda x: x if x > 0 else np.nan)
 
 # %% [markdown]
 # ### Creating "landiness" 
@@ -177,21 +110,9 @@ sale_data['Assessment_Val'] = sale_data['Assessment_Val'].apply(lambda x: x if x
 # Factor engineer "landiness"
 print("Calculating landiness...")
 # Calculate the average legal acreage in square feet
-avg_legal_acreage = (sale_data['legal_acreage'] * 43560).mean()
+avg_legal_acreage = (result['legal_acreage'] * 43560).mean()
 # Create 'landiness' as a ratio of property acreage to average acreage
-sale_data['landiness'] = (sale_data['legal_acreage'] * 43560) / avg_legal_acreage
-
-# %% [markdown]
-# ### Merging the pulled sales data with the market area spreadsheet
-
-# %%
-# Merge the market area and sale data
-print("Merging market area and sale data...")
-# Merge sale_data and market_areas on 'prop_id'
-result = pd.merge(sale_data, market_areas, how='inner', on='prop_id')
-# Drop rows with missing values after merging
-result.dropna(inplace=True)
-
+result['landiness'] = (result['legal_acreage'] * 43560) / avg_legal_acreage
 # %% [markdown]
 # ### Creating in_subdivision
 # Binary variable for if a property is in a subdivision or not.
@@ -202,7 +123,7 @@ print("Creating binary variables for subdivision status...")
 # Create a binary variable 'in_subdivision' to indicate if property is in a subdivision
 result['in_subdivision'] = result['abs_subdv_cd'].apply(lambda x: True if x > 0 else False)
 # Drop unnecessary columns
-result = result.drop(columns=['abs_subdv_cd', 'MA', 'Cluster ID'])
+result = result.drop(columns=['abs_subdv_cd'])
 
 # Convert 'prop_id' to string for consistency across dataframes
 result['prop_id'] = result['prop_id'].astype(str)
@@ -271,81 +192,6 @@ result['imprv_det_quality_cd'] = result['imprv_det_quality_cd'].replace({
 # %% [markdown]
 # ### Adding handcrafted Market Cluster ID's
 # Using the results of the model as guide we futher subdivided the properties in the initial market clusters based on comparable valuation, geography, tax areas, well defined and/or unique neighborhoods, etc. These are still in progress at the moment.
-
-# %%
-# New Market Area subdivisions
-print("Updating Market Cluster IDs for new subdivisions...")
-
-# Ensure 'prop_id' is a string for all subdivision dataframes
-Haile['prop_id'] = Haile['prop_id'].astype(str)
-High_Springs_Main['prop_id'] = High_Springs_Main['prop_id'].astype(str)
-Turkey_Creek['prop_id'] = Turkey_Creek['prop_id'].astype(str)
-Alachua_Main['prop_id'] = Alachua_Main['prop_id'].astype(str)
-Gainesvilleish_Region['prop_id'] = Gainesvilleish_Region['prop_id'].astype(str)
-Real_Tioga['prop_id'] = Real_Tioga['prop_id'].astype(str)
-Duck_Pond['prop_id'] = Duck_Pond['prop_id'].astype(str)
-Newmans_Lake['prop_id'] = Newmans_Lake['prop_id'].astype(str)
-EastMidtownEastA['prop_id'] = EastMidtownEastA['prop_id'].astype(str)
-HighSpringsAGNV['prop_id'] = HighSpringsAGNV['prop_id'].astype(str)
-Golfview['prop_id'] = Golfview['prop_id'].astype(str)
-Lugano['prop_id'] = Lugano['prop_id'].astype(str)
-Archer['prop_id'] = Archer['prop_id'].astype(str)
-WildsPlantation['prop_id'] = WildsPlantation['prop_id'].astype(str)
-Greystone['prop_id'] = Greystone['prop_id'].astype(str)
-Eagle_Point['prop_id'] = Eagle_Point['prop_id'].astype(str)
-Near_Haile['prop_id'] = Near_Haile['prop_id'].astype(str)
-Buck_Bay['prop_id'] = Buck_Bay['prop_id'].astype(str)
-EastGNV['prop_id'] = EastGNV['prop_id'].astype(str)
-SummerCreek['prop_id'] = SummerCreek['prop_id'].astype(str)
-Ironwood['prop_id'] = Ironwood['prop_id'].astype(str)
-TC_Forest['prop_id'] = TC_Forest['prop_id'].astype(str)
-CarolEstates['prop_id'] = CarolEstates['prop_id'].astype(str)
-Westchesterish['prop_id'] = Westchesterish['prop_id'].astype(str)
-QuailCreekish['prop_id'] = QuailCreekish['prop_id'].astype(str)
-Gainesvilleish_Region_2['prop_id'] = Gainesvilleish_Region_2['prop_id'].astype(str)
-Jonesville['prop_id'] = Jonesville['prop_id'].astype(str)
-lincoln_estates['prop_id'] = lincoln_estates['prop_id'].astype(str)
-MidtownEast_C2['prop_id'] = MidtownEast_C2['prop_id'].astype(str)
-
-# Assign new Market Cluster IDs based on subdivision membership and tax area description
-result.loc[result['prop_id'].isin(Haile['prop_id']), 'Market_Cluster_ID'] = 'HaileLike'
-result.loc[result['tax_area_description'] == 'LACROSSE', 'Market_Cluster_ID'] = 'HSBUI'
-result.loc[result['tax_area_description'] == 'HAWTHORNE', 'Market_Cluster_ID'] = 'Hawthorne'
-result.loc[result['Market_Cluster_ID'] == 'HighSprings_D', 'Market_Cluster_ID'] = 'High_Springs_Main'
-result.loc[result['Market_Cluster_ID'] == 'MidtownEast_E', 'Market_Cluster_ID'] = 'MidtownEast_C'
-result.loc[result['Market_Cluster_ID'] == 'MidtownEast_F', 'Market_Cluster_ID'] = 'MidtownEast_B'
-result.loc[result['Market_Cluster_ID'] == 'HighSprings_C', 'Market_Cluster_ID'] = 'HSBUI'
-result.loc[result['Market_Cluster_ID'] == 'Springtree_C', 'Market_Cluster_ID'] = 'HSBUI'
-result.loc[result['Market_Cluster_ID'] == 'swNewberry_C', 'Market_Cluster_ID'] = 'HSBUI'
-result.loc[result['prop_id'].isin(High_Springs_Main['prop_id']), 'Market_Cluster_ID'] = 'High_Springs_Main'
-result.loc[result['prop_id'].isin(Turkey_Creek['prop_id']), 'Market_Cluster_ID'] = 'Turkey_Creek'
-result.loc[result['prop_id'].isin(Alachua_Main['prop_id']), 'Market_Cluster_ID'] = 'Alachua_Main'
-result.loc[result['prop_id'].isin(Gainesvilleish_Region['prop_id']), 'Market_Cluster_ID'] = 'Gainesvilleish_Region'
-result.loc[result['prop_id'].isin(Real_Tioga['prop_id']), 'Market_Cluster_ID'] = 'Real_Tioga'
-result.loc[result['prop_id'].isin(Duck_Pond['prop_id']), 'Market_Cluster_ID'] = 'Duck_Pond'
-result.loc[result['prop_id'].isin(Newmans_Lake['prop_id']), 'Market_Cluster_ID'] = 'Newmans_Lake'
-result.loc[result['prop_id'].isin(EastMidtownEastA['prop_id']), 'Market_Cluster_ID'] = 'EastMidtownEastA'
-result.loc[result['prop_id'].isin(HighSpringsAGNV['prop_id']), 'Market_Cluster_ID'] = 'HighSpringsAGNV'
-result.loc[result['prop_id'].isin(Golfview['prop_id']), 'Market_Cluster_ID'] = 'Golfview'
-result.loc[result['prop_id'].isin(Lugano['prop_id']), 'Market_Cluster_ID'] = 'Lugano'
-result.loc[result['prop_id'].isin(Archer['prop_id']), 'Market_Cluster_ID'] = 'Archer'
-result.loc[result['prop_id'].isin(WildsPlantation['prop_id']), 'Market_Cluster_ID'] = 'WildsPlantation'
-result.loc[result['prop_id'].isin(Greystone['prop_id']), 'Market_Cluster_ID'] = 'HaileLike'
-result.loc[result['prop_id'].isin(Near_Haile['prop_id']), 'Market_Cluster_ID'] = 'HaileLike'
-result.loc[result['prop_id'].isin(Buck_Bay['prop_id']), 'Market_Cluster_ID'] = 'Buck_Bay'
-result.loc[result['prop_id'].isin(EastGNV['prop_id']), 'Market_Cluster_ID'] = 'EastGNV'
-result.loc[result['prop_id'].isin(SummerCreek['prop_id']), 'Market_Cluster_ID'] = 'SummerCreek'
-result.loc[result['prop_id'].isin(Ironwood['prop_id']), 'Market_Cluster_ID'] = 'Ironwood'
-result.loc[result['prop_id'].isin(TC_Forest['prop_id']), 'Market_Cluster_ID'] = 'TC_Forest'
-result.loc[result['prop_id'].isin(CarolEstates['prop_id']), 'Market_Cluster_ID'] = 'CarolEstates'
-result.loc[result['prop_id'].isin(Westchesterish['prop_id']), 'Market_Cluster_ID'] = 'Westchesterish'
-result.loc[result['prop_id'].isin(QuailCreekish['prop_id']), 'Market_Cluster_ID'] = 'QuailCreekish'
-result.loc[result['prop_id'].isin(Gainesvilleish_Region_2['prop_id']), 'Market_Cluster_ID'] = 'Gainesvilleish_Region'
-result.loc[result['prop_id'].isin(Jonesville['prop_id']), 'Market_Cluster_ID'] = 'Jonesville'
-result.loc[result['prop_id'].isin(lincoln_estates['prop_id']), 'Market_Cluster_ID'] = 'Lincoln_Estates'
-result.loc[result['prop_id'].isin(MidtownEast_C2['prop_id']), 'Market_Cluster_ID'] = 'MidtownEast_C'
-# Keep the first occurrence of each duplicate prop_id, only needed for PID 99411 which is duped for some reason
-result = result.drop_duplicates(subset='prop_id', keep='first')
 # %% [markdown]
 # ## Market Clusters map and summary statistics
 # These clusters are still a work in progress
@@ -362,7 +208,7 @@ from IPython.display import HTML
 IntMapData = result.copy()
 
 # Calculate the mean latitude and longitude
-center_lat = IntMapData['CENTROID_Y'].mean()
+center_lat = IntMapData['CENTROID_y'].mean()
 center_lon = IntMapData['CENTROID_X'].mean()
 
 # Create the map centered on the mean location
@@ -387,12 +233,12 @@ cluster_colors = {
 }
 
 # Automatically calculate map bounds
-min_lat, max_lat = IntMapData['CENTROID_Y'].min(), IntMapData['CENTROID_Y'].max()
+min_lat, max_lat = IntMapData['CENTROID_y'].min(), IntMapData['CENTROID_y'].max()
 min_lon, max_lon = IntMapData['CENTROID_X'].min(), IntMapData['CENTROID_X'].max()
 
 # Fit map to bounds dynamically based on displayed points
 def update_bounds(points):
-    latitudes = points['CENTROID_Y']
+    latitudes = points['CENTROID_y']
     longitudes = points['CENTROID_X']
     return [[latitudes.min(), longitudes.min()], [latitudes.max(), longitudes.max()]]
 
@@ -407,7 +253,7 @@ for cluster_id in unique_clusters:
     cluster_data = IntMapData[IntMapData['Market_Cluster_ID'] == cluster_id]
     for _, row in cluster_data.iterrows():
         folium.CircleMarker(
-            location=[row['CENTROID_Y'], row['CENTROID_X']],
+            location=[row['CENTROID_y'], row['CENTROID_X']],
             radius=3,  # Smaller size for better visualization
             color=cluster_colors.get(cluster_id, 'gray'),
             fill=True,
@@ -532,7 +378,7 @@ result.columns = result.columns.astype(str)
 # regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area) + np.log(landiness) + np.log(percent_good) + np.log(imprv_det_quality_cd) + np.log(total_porch_area + 1) + np.log(total_garage_area + 1) + Springtree_B + HighSprings_A + MidtownEast_C + swNewberry_B + MidtownEast_A + swNewberry_A + MidtownEast_B + HighSprings_F + Springtree_A + Tioga_B + Tioga_A + MidtownEast_D + WaldoRural_A + Alachua_Main + High_Springs_Main + HaileLike + HighSprings_B + Real_Tioga + Duck_Pond + Newmans_Lake + EastMidtownEastA + HighSpringsAGNV + Hawthorne + HighSprings_B + Golfview + Lugano + Archer + WildsPlantation+Buck_Bay+in_subdivision+has_lake+WaldoRural_C+HighSprings_E+HSBUI+number_of_baths+EastGNV+Ironwood+SummerCreek+has_canal+TC_Forest+CarolEstates+Westchesterish+QuailCreekish"
 
 # %%
-regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area) + np.log(landiness) + np.log(percent_good) + np.log(imprv_det_quality_cd) + np.log(total_porch_area + 1) + np.log(total_garage_area + 1) + Springtree_B + HighSprings_A + MidtownEast_C + swNewberry_B + MidtownEast_A + swNewberry_A + MidtownEast_B + HighSprings_F + Springtree_A + Tioga_B + Tioga_A + MidtownEast_D + WaldoRural_A + Alachua_Main + High_Springs_Main + HaileLike + HighSprings_B + Real_Tioga + Duck_Pond + Newmans_Lake + EastMidtownEastA + HighSpringsAGNV + Hawthorne + HighSprings_B + Golfview + Lugano + Archer + WildsPlantation+Buck_Bay+in_subdivision+has_lake+WaldoRural_C+HighSprings_E+HSBUI+number_of_baths+EastGNV+Ironwood+SummerCreek+has_canal+TC_Forest+CarolEstates+Westchesterish+QuailCreekish+Jonesville+Lincoln_Estates"
+regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area) + np.log(landiness) + np.log(percent_good) + np.log(imprv_det_quality_cd) + np.log(total_porch_area + 1) + np.log(total_garage_area + 1) + number_of_baths + in_subdivision + has_lake + has_canal + Alachua_Main + Archer + Buck_Bay + Carol_Estates + Duck_Pond + EastGNV + EastMidtownEastA + Golfview + Haile_Like + Hawthorne + Hickory_Forest + High_Springs_Main + HighSpringsA + HighSpringsAGNV + HighSpringsAGNVSouth + HighSpringsB+HSBUI_2 + Ironwood + Jonesville + Kanapaha + Lincoln_Estates + Lugano + MidtownEast_A + MidtownEast_B + MidtownEast_C + Montery  + Newnans_Lake + QuailCreek + Rural_North + Rural_South + San_Felasco + Sorrento + Split_Rock + Springtree + SummerCreek + Sweetwater + swNewberry_A + swNewberry_B + TC_Forest + Tioga + Tioga_A + Tioga_B + Turkey_Creek + Valwood + Waldo + WaldoRural + Westchester + WildsPlantation"
 # %% [markdown]
 # ### Train/Test Split
 # The data is split into training and testing sets. The training data is used to inform the model, the test data is used to check the performance of the trained model. The split takes out a random 20% of the properties to use for testing but for my purposes I've been using the same random seed so that variation in the results is from changes I make to the model and not from just getting a different seed. I believe the plan in the future will be to run the model on multiple seeds.
