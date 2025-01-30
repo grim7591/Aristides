@@ -57,7 +57,7 @@ import statsmodels.formula.api as smf
 import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-from IAAOFunctions import PRD, COD, PRB, weightedMean, averageDeviation
+from IAAOFunctions import PRD, COD, PRB, weightedMean, averageDeviation, PRBCI
 from StrataCaster import StrataCaster
 from PlotPlotter import PlotPlotter
 import matplotlib.pyplot as plt
@@ -78,7 +78,8 @@ import matplotlib.pyplot as plt
 
 # Load the data
 print("Loading data from CSV file...")
-result = pd.read_csv('Data/dp2124m.csv')
+result = pd.read_csv('Data/dp2224a.csv')
+#result = pd.read_csv('Data/dp2124c.csv')
 result.rename(columns={'Name': 'Market_Cluster_ID'}, inplace=True)
 # %% [markdown]
 # ### Overwriting the sale price of some properties whose sales were miscoded in PACs
@@ -387,7 +388,7 @@ regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area) + np.log(landi
 # Split data into training and test sets
 print("Splitting data into training and test sets...")
 test_size_var = 0.2
-train_data, test_data = train_test_split(result, test_size=test_size_var, random_state=42)
+train_data, test_data = train_test_split(result, test_size=test_size_var, random_state=420)
 
 # %% [markdown]
 # ### Regression run
@@ -447,6 +448,7 @@ mae_2 = mean_absolute_error(predicted_values_mae, actual_values_mae)
 PRD_table = PRD(predicted_values, actual_values)
 COD_table = COD(predicted_values, actual_values)
 PRB_table = PRB(predicted_values, actual_values)
+PRBCI_table = PRBCI(predicted_values, actual_values)
 wm = weightedMean(predicted_values, actual_values)
 meanRatio = (predicted_values / actual_values).mean()
 medianRatio = (predicted_values / actual_values).median()
@@ -457,6 +459,7 @@ print(f"Mean Absolute Error_2: {mae_2}")
 print(f"PRD: {PRD_table}")
 print(f"COD: {COD_table}")
 print(f"PRB: {PRB_table}")
+print(f"PRBCI: {PRBCI_table}")
 print(f"weightedMean: {wm}")
 print(f"meanRatio: {meanRatio}")
 print(f"medianRatio: {medianRatio}")
@@ -742,4 +745,22 @@ for cluster_id, hood_list in market_to_hoods.items():
 with open('market_cluster_to_hood_cd.txt', 'w') as file:
     for cluster_id, hood_list in market_to_hoods.items():
         file.write(f"Market_Cluster_ID {cluster_id}: {hood_list}\n")
+
+# %%
+# Calculate Q1, Q3, and IQR
+Q1 = MapData['sale_ratio'].quantile(0.25)
+Q3 = MapData['sale_ratio'].quantile(0.75)
+IQR = Q3 - Q1
+
+# Define lower and upper bounds
+lower_bound = Q1 - 3 * IQR
+upper_bound = Q3 + 3 * IQR
+
+# Filter data within the bounds
+outliers_df = MapData[(MapData['sale_ratio'] < lower_bound) | (MapData['sale_ratio'] > upper_bound)]
+
+
+print("Filtered DataFrame:")
+print(outliers_df)
+outliers_df.to_csv('3IQR.csv')
 # %%

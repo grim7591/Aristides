@@ -89,6 +89,20 @@ def PRB(pred, sp):
     model = sm.OLS(PCT_DIFF, modelData).fit()
     return {"PRB" : model.params[0], "Sig" : model.pvalues[0]}
 
+# %%
+def PRBCI(pred, sp, alpha=0.05):
+    RATIO = pred / sp
+    medianRatio = RATIO.median()
+    VALUE = (0.50 * sp) + (0.50 * pred / pred.median())
+    LN_VALUE = np.log(VALUE) / np.log(2)
+    PCT_DIFF = (RATIO - medianRatio) / medianRatio
+    modelData = sm.add_constant(LN_VALUE)
+    model = sm.OLS(PCT_DIFF, modelData).fit()
+    
+    # Ensure we select the correct row for PRB (not intercept)
+    ci_low, ci_high = model.conf_int(alpha=alpha).iloc[1]  
+
+    return {"CI_Lower": ci_low, "CI_Upper": ci_high}
 
 # %%
 #------------------------------------
