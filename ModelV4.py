@@ -358,7 +358,7 @@ result.rename(columns=column_mapping, inplace=True)
 
 # %%
 # Define the variable
-legalAcreageMax = 10  # in acres
+legalAcreageMax = 1  # in acres
 
 result = result[result['legal_acreage'] <= legalAcreageMax]
 
@@ -377,7 +377,7 @@ result.columns = result.columns.astype(str)
 # regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area) + np.log(landiness) + np.log(percent_good) + np.log(imprv_det_quality_cd) + np.log(total_porch_area + 1) + np.log(total_garage_area + 1) + Springtree_B + HighSprings_A + MidtownEast_C + swNewberry_B + MidtownEast_A + swNewberry_A + MidtownEast_B + HighSprings_F + Springtree_A + Tioga_B + Tioga_A + MidtownEast_D + WaldoRural_A + Alachua_Main + High_Springs_Main + HaileLike + HighSprings_B + Real_Tioga + Duck_Pond + Newmans_Lake + EastMidtownEastA + HighSpringsAGNV + Hawthorne + HighSprings_B + Golfview + Lugano + Archer + WildsPlantation+Buck_Bay+in_subdivision+has_lake+WaldoRural_C+HighSprings_E+HSBUI+number_of_baths+EastGNV+Ironwood+SummerCreek+has_canal+TC_Forest+CarolEstates+Westchesterish+QuailCreekish"
 
 # %%
-regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area) + np.log(landiness) + np.log(percent_good) + np.log(imprv_det_quality_cd) + np.log(total_porch_area + 1) + np.log(total_garage_area + 1) + number_of_baths + in_subdivision + has_lake + has_canal + Alachua_Main + Archer + Buck_Bay + Carol_Estates + Duck_Pond + EastGNV + EastMidtownEastA + Golfview + Haile_Like + Hawthorne + Hickory_Forest + High_Springs_Main + HighSpringsA + HighSpringsAGNV + HighSpringsAGNVSouth + HighSpringsB+HSBUI_2 + Ironwood + Jonesville + Kanapaha + Lincoln_Estates + Lugano + MidtownEast_A + MidtownEast_B + MidtownEast_C + Montery  + Newnans_Lake + QuailCreek + Rural_North + Rural_South + San_Felasco + Sorrento + Split_Rock + Springtree + SummerCreek + Sweetwater + swNewberry_A + swNewberry_B + TC_Forest + Tioga + Tioga_A + Tioga_B + Turkey_Creek + Valwood + Waldo + WaldoRural + Westchester + WildsPlantation"
+regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area) + np.log(landiness) + np.log(percent_good) + np.log(imprv_det_quality_cd) + np.log(total_porch_area + 1) + np.log(total_garage_area + 1) + number_of_baths + in_subdivision + Alachua_Main + Archer + Buck_Bay + Carol_Estates + Duck_Pond + EastGNV + EastMidtownEastA + Golfview + Haile_Like + Hawthorne + Hickory_Forest + High_Springs_Main + HighSpringsA + HighSpringsAGNV + HighSpringsAGNVSouth + HighSpringsB+HSBUI_2 + Ironwood + Jonesville + Kanapaha + Lincoln_Estates + Lugano + MidtownEast_A + MidtownEast_B + MidtownEast_C + Montery  + Newnans_Lake + QuailCreek + Rural_North + Rural_South + San_Felasco + Sorrento + Split_Rock + Springtree + SummerCreek + Sweetwater + swNewberry_A + swNewberry_B + TC_Forest + Tioga + Tioga_A + Tioga_B + Turkey_Creek + Valwood + Waldo + WaldoRural + Westchester + WildsPlantation"
 # %% [markdown]
 # ### Train/Test Split
 # The data is split into training and testing sets. The training data is used to inform the model, the test data is used to check the performance of the trained model. The split takes out a random 20% of the properties to use for testing but for my purposes I've been using the same random seed so that variation in the results is from changes I make to the model and not from just getting a different seed. I believe the plan in the future will be to run the model on multiple seeds.
@@ -761,4 +761,79 @@ outliers_df = MapData[(MapData['sale_ratio'] < lower_bound) | (MapData['sale_rat
 print("Filtered DataFrame:")
 print(outliers_df)
 outliers_df.to_csv('3IQR.csv')
+# %%
+# PREDICTIONS
+pop_data = pd.read_csv('Data/popdata2024mapped_3.csv')
+pop_data.rename(columns={'Name': 'Market_Cluster_ID'}, inplace=True)
+pop_data = pop_data.join(pd.get_dummies(pop_data.tax_area_description))
+pop_data = pop_data.join(pd.get_dummies(pop_data.Market_Cluster_ID))
+
+# Factor engineer "landiness"
+print("Calculating landiness...")
+# Calculate the average legal acreage in square feet
+avg_legal_acreage = (pop_data['legal_acreage'] * 43560).mean()
+# Create 'landiness' as a ratio of property acreage to average acreage
+pop_data['landiness'] = (pop_data['legal_acreage'] * 43560) / avg_legal_acreage
+# ### Creating in_subdivision
+# Binary variable for if a property is in a subdivision or not.
+
+# Make subdivision code binary variable
+print("Creating binary variables for subdivision status...")
+# Create a binary variable 'in_subdivision' to indicate if property is in a subdivision
+pop_data['in_subdivision'] = pop_data['abs_subdv_cd'].apply(lambda x: True if x > 0 else False)
+# Drop unnecessary columns
+pop_data = pop_data.drop(columns=['abs_subdv_cd'])
+
+# Convert 'prop_id' to string for consistency across dataframes
+pop_data['prop_id'] = pop_data['prop_id'].astype(str)
+
+# ### Effective age overwrites
+# In 2024 we updated the effective year built of all properties to 1994 at minimum. When reviewing outliers I applied that same logic to these properties which were evaluated on pre-2024 factors. It was determined by valuation that a 30 year limit on effective age makes sense and because that was a change in our process and not necessarily a market shift, I think it makes sense to mitigate the impact of that change on the model by applying it retroactively to previous sale years. 
+
+pop_data['effective_age'] = pop_data['effective_age'].apply(lambda x: 30 if x > 30 else x)
+
+# ### Calculating "percent good" from effective age
+# Percent good = 1 - (effective_age/100)
+# Factor Engineer Percent Good based on effective age
+print("Calculating percent good based on effective age...")
+# Calculate 'percent_good' as a factor of effective age
+pop_data['percent_good'] = 1 - (pop_data['effective_age']/ 100)
+# Linearize the quality codes
+print("Linearizing quality codes...")
+# Replace quality codes with numerical values for linear regression
+pop_data['imprv_det_quality_cd'] = pop_data['imprv_det_quality_cd'].replace({
+    1: 0.1331291,
+    2: 0.5665645,
+    3: 1.0,
+    4: 1.1624432,
+    5: 1.4343298,
+    6: 1.7062164
+})
+
+pop_data['predicted_log_Assessment_Val'] = regresult.predict(pop_data)
+# %%
+# Convert predicted log values to original scale
+pop_data['predicted_Assessment_Val'] = np.exp(pop_data['predicted_log_Assessment_Val'])
+# Calculate predicted market value by adding miscellaneous value
+pop_data['predicted_Market_Val'] = pop_data['predicted_Assessment_Val'] + pop_data['MISC_Val']
+# Calculate residuals for market and assessment values
+pop_data['Market_Residual'] = pop_data['predicted_Market_Val'] - pop_data['market']
+#pop_data['Assessment_Residual'] = pop_data['predicted_Assessment_Val'] - pop_data['Assessment_Val']
+# Convert residuals to numeric and handle errors
+pop_data['Market_Residual'] = pd.to_numeric(pop_data['Market_Residual'], errors='coerce')
+#pop_data['Assessment_Residual'] = pd.to_numeric(pop_data['Assessment_Residual'], errors='coerce')
+# Calculate absolute values of residuals
+pop_data['AbsV_Market_Residual'] = pop_data['Market_Residual'].abs()
+#pop_data['AbsV_Assessment_Residual'] = pop_data['Assessment_Residual'].abs()
+# Calculate sale ratio
+pop_data['sale_ratio'] = pop_data['predicted_Market_Val'] / pop_data['market']
+# Export pop_data to CSV
+print("Exporting geospatial analysis data to CSV...")
+pop_data.to_csv('pop_data_predicted.csv', index=False)
+# %%
+pop_data['predicted_Market_Val'].describe()
+# %%
+pop_data['market'].describe()
+# %%
+pop_data['predicted_Market_Val'] = pd.to_numeric(pop_data['predicted_Market_Val'], errors='coerce')
 # %%
