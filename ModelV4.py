@@ -78,10 +78,14 @@ import matplotlib.pyplot as plt
 
 # Load the data
 print("Loading data from CSV file...")
-result = pd.read_csv('Data/dp2224a.csv')
+result = pd.read_csv('Data/dp70m.csv')
 #result = pd.read_csv('Data/dp2124c.csv')
 result.rename(columns={'Name': 'Market_Cluster_ID'}, inplace=True)
-
+'''
+result['Market_Cluster_ID'] = result.apply(
+    lambda row: 'Highland' if row['hood_cd'] in [324428.02, 324428.01] else row['Market_Cluster_ID'], axis=1
+)
+'''
 # %% [markdown]
 # ### Overwriting the sale price of some properties whose sales were miscoded in PACs
 
@@ -177,20 +181,6 @@ result.loc[result['prop_id'].isin(['19165']), 'imprv_det_quality_cd'] = 4
 #     4: 1.1624432,
 #     5: 1.4343298,
 #     6: 1.7062164
-
-# %%
-# Linearize the quality codes
-print("Linearizing quality codes...")
-# Replace quality codes with numerical values for linear regression
-result['imprv_det_quality_cd'] = result['imprv_det_quality_cd'].replace({
-    1: 0.1331291,
-    2: 0.5665645,
-    3: 1.0,
-    4: 1.1624432,
-    5: 1.4343298,
-    6: 1.7062164
-})
-
 # %% [markdown]
 # ### Adding handcrafted Market Cluster ID's
 # Using the results of the model as guide we futher subdivided the properties in the initial market clusters based on comparable valuation, geography, tax areas, well defined and/or unique neighborhoods, etc. These are still in progress at the moment.
@@ -309,6 +299,7 @@ display(HTML(map_clusters._repr_html_()))
 
 
 # %%
+'''
 # Undo the linearization of quality codes
 result['imprv_det_quality_cd'] = result['imprv_det_quality_cd'].replace({
     0.1331291: 1,
@@ -318,7 +309,7 @@ result['imprv_det_quality_cd'] = result['imprv_det_quality_cd'].replace({
     1.4343298: 5,
     1.7062164: 6
 })
-
+'''
 # Group by Market_Cluster_ID to calculate metrics
 summary_stats = result.groupby('Market_Cluster_ID').agg(
     count=('Market_Cluster_ID', 'size'),
@@ -336,6 +327,17 @@ display(summary_stats.style.hide(axis='index'))
 # ### Creating dummy variables for non-numeric data
 # Since several of the factors are not numbers we need to make binary dummy variables so the regression can recognize their impact. Dummy variables put different values for a given factor into categories and each property is either 1 or 0 (true or false) for each category. Some of the market clusters also have to have their names slightly tweaked so that python will behave.
 
+# Linearize the quality codes
+print("Linearizing quality codes...")
+# Replace quality codes with numerical values for linear regression
+result['imprv_det_quality_cd'] = result['imprv_det_quality_cd'].replace({
+    1: 0.1331291,
+    2: 0.5665645,
+    3: 1.0,
+    4: 1.1624432,
+    5: 1.4343298,
+    6: 1.7062164
+})
 # %%
 # Create dummy variables for non-numeric data
 print("Creating dummy variables...")
@@ -360,7 +362,7 @@ result.rename(columns=column_mapping, inplace=True)
 # Define the variable
 legalAcreageMax = 1  # in acres
 
-result = result[result['legal_acreage'] <= legalAcreageMax]
+result = result[result['legal_acreage'] < legalAcreageMax]
 
 # %% [markdown]
 # ### Ensuring all column names are strings
@@ -377,7 +379,7 @@ result.columns = result.columns.astype(str)
 # regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area) + np.log(landiness) + np.log(percent_good) + np.log(imprv_det_quality_cd) + np.log(total_porch_area + 1) + np.log(total_garage_area + 1) + Springtree_B + HighSprings_A + MidtownEast_C + swNewberry_B + MidtownEast_A + swNewberry_A + MidtownEast_B + HighSprings_F + Springtree_A + Tioga_B + Tioga_A + MidtownEast_D + WaldoRural_A + Alachua_Main + High_Springs_Main + HaileLike + HighSprings_B + Real_Tioga + Duck_Pond + Newmans_Lake + EastMidtownEastA + HighSpringsAGNV + Hawthorne + HighSprings_B + Golfview + Lugano + Archer + WildsPlantation+Buck_Bay+in_subdivision+has_lake+WaldoRural_C+HighSprings_E+HSBUI+number_of_baths+EastGNV+Ironwood+SummerCreek+has_canal+TC_Forest+CarolEstates+Westchesterish+QuailCreekish"
 
 # %%
-regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area) + np.log(landiness) + np.log(percent_good) + np.log(imprv_det_quality_cd) + np.log(total_porch_area + 1) + np.log(total_garage_area + 1) + number_of_baths + in_subdivision + Alachua_Main + Archer + Buck_Bay + Carol_Estates + Duck_Pond + EastGNV + EastMidtownEastA + Golfview + Haile_Like + Hawthorne + Hickory_Forest + High_Springs_Main + HighSpringsA + HighSpringsAGNV + HighSpringsAGNVSouth + HighSpringsB+HSBUI_2 + Ironwood + Jonesville + Kanapaha + Lincoln_Estates + Lugano + MidtownEast_A + MidtownEast_B + MidtownEast_C + Montery  + Newnans_Lake + QuailCreek + Rural_North + Rural_South + San_Felasco + Sorrento + Split_Rock + Springtree + SummerCreek + Sweetwater + swNewberry_A + swNewberry_B + TC_Forest + Tioga + Tioga_A + Tioga_B + Turkey_Creek + Valwood + Waldo + WaldoRural + Westchester + WildsPlantation"
+regressionFormula = "np.log(Assessment_Val) ~ np.log(living_area) + np.log(landiness) + np.log(percent_good) + np.log(imprv_det_quality_cd) + np.log(total_porch_area + 1) + np.log(total_garage_area + 1) + number_of_baths + in_subdivision + Alachua_Main + Archer + Buck_Bay + Carol_Estates + Duck_Pond + EastGNV + EastMidtownEastA + Golfview + Haile_Like + Hawthorne + Hickory_Forest + High_Springs_Main + HighSpringsA + HighSpringsAGNV + HighSpringsAGNVSouth + HighSpringsB+HSBUI_2 + Ironwood + Jonesville + Kanapaha + Lincoln_Estates + Lugano + MidtownEast_A + MidtownEast_B + MidtownEast_C + Montery  + Newnans_Lake + QuailCreek + Rural_North + Rural_South + San_Felasco + Sorrento + Split_Rock + Springtree + SummerCreek + Sweetwater + swNewberry_A + swNewberry_B + TC_Forest + Tioga + Tioga_A + Tioga_B + Turkey_Creek + Valwood + Waldo + WaldoRural + Westchester + WildsPlantation+Highland"
 # %% [markdown]
 # ### Train/Test Split
 # The data is split into training and testing sets. The training data is used to inform the model, the test data is used to check the performance of the trained model. The split takes out a random 20% of the properties to use for testing but for my purposes I've been using the same random seed so that variation in the results is from changes I make to the model and not from just getting a different seed. I believe the plan in the future will be to run the model on multiple seeds.
@@ -761,12 +763,17 @@ outliers_df = MapData[(MapData['sale_ratio'] < lower_bound) | (MapData['sale_rat
 print("Filtered DataFrame:")
 print(outliers_df)
 outliers_df.to_csv('3IQR.csv')
+
+
 # %%
 # PREDICTIONS
-pop_data = pd.read_csv('Data/popdata2024mapped_3.csv')
+pop_data = pd.read_csv('Data/bdp70m.csv')
 pop_data.rename(columns={'Name': 'Market_Cluster_ID'}, inplace=True)
 pop_data = pop_data.join(pd.get_dummies(pop_data.tax_area_description))
 pop_data = pop_data.join(pd.get_dummies(pop_data.Market_Cluster_ID))
+pop_data.drop(pop_data[pop_data['legal_acreage'] >= 1].index, inplace=True)
+pop_data.drop(pop_data[pop_data['market'] < 10000].index, inplace=True)
+pop_data.drop(pop_data[pop_data['Join_Count'] != 1].index, inplace=True)
 
 # Factor engineer "landiness"
 print("Calculating landiness...")
@@ -836,4 +843,37 @@ pop_data['predicted_Market_Val'].describe()
 pop_data['market'].describe()
 # %%
 pop_data['predicted_Market_Val'] = pd.to_numeric(pop_data['predicted_Market_Val'], errors='coerce')
+# %%
+summary_df = pd.DataFrame({
+    'predicted_Market_Val': pop_data['predicted_Market_Val'].describe(),
+    'market': pop_data['market'].describe()
+})
+
+# Add a total row
+summary_df.loc['total'] = [pop_data['predicted_Market_Val'].sum(), pop_data['market'].sum()]
+
+# Format numbers with commas and two decimal places
+summary_df = summary_df.map(lambda x: f"{x:,.2f}")
+
+print(summary_df)
+# %%
+# Group by 'hood_cd', summing both columns and adding a count of properties
+hood_comparison = pop_data.groupby('hood_cd').agg({
+    'predicted_Market_Val': 'sum',
+    'market': 'sum',
+    'hood_cd': 'count'  # This counts the number of properties per neighborhood
+}).rename(columns={'hood_cd': 'count'}).reset_index()
+
+# Calculate the % difference
+hood_comparison['pct_difference'] = (
+    (hood_comparison['predicted_Market_Val'] - hood_comparison['market']) / hood_comparison['market']
+) * 100  # Convert to percentage
+
+# Save to CSV for easier viewing
+hood_comparison.to_csv("hood_comparison_2.csv", index=False)
+
+# Display the DataFrame summary
+print(hood_comparison)
+print(hood_comparison['pct_difference'].describe())
+
 # %%
