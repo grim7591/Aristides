@@ -417,8 +417,8 @@ XXIVSales = XXIVSales[~XXIVSales['prop_id'].isin(XXIVOutliers['prop_id'])]
 #XXIVSales.rename(columns={'Name': 'Market_Cluster_ID'}, inplace=True)
 XXIVSales = XXIVSales.merge(DamiMAs[['prop_id', 'SUBMKT']], on='prop_id', how='left')
 XXIVSales.rename(columns={'SUBMKT': 'Market_Cluster_ID'}, inplace=True)
-XXIVSales = XXIVSales[~XXIVSales['Market_Cluster_ID'].isin(['Highsprings_B10', 'swNewberry_C1'])]
-XXIVSales = XXIVSales.dropna()
+#XXIVSales = XXIVSales[~XXIVSales['Market_Cluster_ID'].isin(['Highsprings_B10', 'swNewberry_C1', 'Highsprings_B12', 'Highsprings_E1', 'Springtree_B1'])]
+#XXIVSales = XXIVSales.dropna()
 XXIVSales = XXIVSales.join(pd.get_dummies(XXIVSales.tax_area_description))
 XXIVSales = XXIVSales.join(pd.get_dummies(XXIVSales.Market_Cluster_ID))
 XXIVSales.drop(XXIVSales[XXIVSales['legal_acreage'] >= 1].index, inplace=True)

@@ -65,7 +65,7 @@ from IPython.display import Markdown
 
 # Load the data
 print("Loading data from CSV file...")
-result = pd.read_csv('Data/dp71m.csv')
+result = pd.read_csv('Data/dp73m.csv')
 #result = pd.read_csv('Data/dp2124c.csv')
 result.rename(columns={'Name': 'Market_Cluster_ID'}, inplace=True)
 flood_zones = pd.read_csv('Data/Prop_FloodPlains.csv')
@@ -865,8 +865,8 @@ print(hood_comparison['pct_difference'].describe())
 # %%
 # 2024 only predictions
 # PREDICTIONS
-XXIVSales = pd.read_csv('Data/oopsall24sales.csv')
-MLS_SalesXXIV = pd.read_csv('Data/2024MLSData.csv')
+XXIVSales = pd.read_csv('Data/oopsall24sales_2m.csv')
+MLS_SalesXXIV = pd.read_csv('Data/MLSData/2024MLSData.csv')
 XXIVOutliers = pd.read_csv('3IQRXXIV_3.csv')
 XXIVSales = XXIVSales[XXIVSales['geo_id'].isin(MLS_SalesXXIV['Tax ID'])]
 XXIVSales = XXIVSales[~XXIVSales['prop_id'].isin(XXIVOutliers['prop_id'])]
