@@ -3,7 +3,6 @@ import pandas as pd
 import statsmodels.formula.api as smf
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
-
 from IAAOFunctions import PRD, COD, PRB, weightedMean, PRBCI
 
 
@@ -278,10 +277,10 @@ def main():
         2024: 'Data/MLSData/2024MLSData.csv'
     }
     exclusions_csv_map = {
-        2021: 'Data/XXI_exclusions_f2.csv',
-        2022: 'Data/XXII_exclusions_f2.csv',
-        2023: 'Data/XXIII_exclusions_f2.csv',
-        2024: 'Data/XXIV_exclusions_f2.csv'
+        2021: 'Data/XXI_exclusions_f3.csv',
+        2022: 'Data/XXII_exclusions_f3.csv',
+        2023: 'Data/XXIII_exclusions_f3.csv',
+        2024: 'Data/XXIV_exclusions_f3.csv'
     }
     
     # -----------------------------------------------------------
