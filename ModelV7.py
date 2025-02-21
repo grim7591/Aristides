@@ -178,7 +178,7 @@ def train_and_evaluate(
     df: pd.DataFrame,
     formula: str,
     test_size: float = 0.2,
-    random_seed: int = 44
+    random_seed: int = 69
 ):
     """
     Splits `df` into train/test, fits a statsmodels OLS using `formula`,
