@@ -33,14 +33,11 @@ def VEI(MapData, confidence=0.95, n_bootstrap=1000, show_plots=True):
         - 'median_changes_table': a DataFrame of median sale_ratio by ProxyBinned10
         - 'bootstrap_ci': a DataFrame of bin, median, lower_CI, upper_CI (bootstrapped)
         - 'exact_ci': a DataFrame of bin, median, lower_CI, upper_CI (exact rank-based)
-
+        - 'VEI': the Value Equity Index based on the exact CI method
     """
     
     # Copy original data to avoid modifying in place
     data = MapData.copy()
-
-    # Create SYEAR
-    data['SYEAR'] = data['prop_val_yr'] - 1
 
     # Compute the overall median of sale_ratio
     overall_median = data['sale_ratio'].median()
@@ -64,9 +61,6 @@ def VEI(MapData, confidence=0.95, n_bootstrap=1000, show_plots=True):
         plt.title("Scatter Plot of Ln_Proxy vs. pct_diff")
         plt.show()
 
-    # Calculate ratio statistics by year
-    ratio_stats = data.groupby('SYEAR')['predicted_Market_Val'].agg(['count', 'median', 'mean', 'min', 'max'])
-
     # Calculate deciles for Proxy
     deciles = np.percentile(data['Proxy'], [10, 20, 30, 40, 50, 60, 70, 80, 90])
     (Per10, Per20, Per30, Per40, Per50, Per60, Per70, Per80, Per90) = deciles
@@ -79,7 +73,7 @@ def VEI(MapData, confidence=0.95, n_bootstrap=1000, show_plots=True):
     )
 
     # Calculate and plot median changes by ProxyBinned10
-    median_changes_table = data.groupby('ProxyBinned10')['sale_ratio'].median().reset_index()
+    median_changes_table = data.groupby('ProxyBinned10', observed=False)['sale_ratio'].median().reset_index()
     median_changes_table.columns = ['ProxyBinned10', 'Median_Sale_Ratio']
 
     if show_plots:
@@ -105,8 +99,11 @@ def VEI(MapData, confidence=0.95, n_bootstrap=1000, show_plots=True):
 
     # Compute bootstrap-based median CIs for each bin
     boot_ci_results = []
-    for bin_label, group_df in data.groupby('ProxyBinned10'):
+    for bin_label, group_df in data.groupby('ProxyBinned10', observed=False):
         median_value = group_df['sale_ratio'].median()
+        if group_df['sale_ratio'].dropna().empty:
+            boot_ci_results.append((bin_label, np.nan, np.nan, np.nan))
+            continue
         lower_ci, upper_ci = median_confidence_interval_bootstrap(
             group_df['sale_ratio'].dropna().values,
             confidence=confidence,
@@ -125,9 +122,8 @@ def VEI(MapData, confidence=0.95, n_bootstrap=1000, show_plots=True):
         data_values = np.sort(data_values)
         n = len(data_values)
 
-        # For a 95% CI, the z-score ~ 1.96. Generalize for other confidence levels if needed:
-        # z = stats.norm.ppf(0.5 + confidence / 2.0)
-        z = 1.96  # fixed for 95% if you prefer the original formula
+        # For a 95% CI, you can generalize z for different confidence levels if you like
+        z = 1.96  # ~95% coverage
         j = (z * np.sqrt(n)) / 2.0
         
         # Adjust for even sample sizes
@@ -145,10 +141,9 @@ def VEI(MapData, confidence=0.95, n_bootstrap=1000, show_plots=True):
 
     # Compute exact rank-based median CIs for each bin
     exact_ci_results = []
-    for bin_label, group_df in data.groupby('ProxyBinned10'):
+    for bin_label, group_df in data.groupby('ProxyBinned10', observed=False):
         values = group_df['sale_ratio'].dropna().values
         if len(values) == 0:
-            # Handle empty groups if needed
             exact_ci_results.append((bin_label, np.nan, np.nan, np.nan))
             continue
         median_val, lower_ci, upper_ci = median_confidence_interval_exact(values, confidence)
@@ -159,12 +154,34 @@ def VEI(MapData, confidence=0.95, n_bootstrap=1000, show_plots=True):
         columns=['ProxyBinned10', 'Median_Sale_Ratio', 'Lower_CI', 'Upper_CI']
     )
 
+    # ---------------------------
+    # NEW STEP: Compute VEI using exact CI
+    # VEI = (Lower CI of the bin with the *highest* median) 
+    #        / (Upper CI of the bin with the *lowest* median)
+    # ---------------------------
+    # First, drop any NaN rows so idxmax() and idxmin() won't fail:
+    exact_ci_clean = exact_ci.dropna(subset=['Median_Sale_Ratio', 'Lower_CI', 'Upper_CI'])
+
+    if not exact_ci_clean.empty:
+        # Find bin with highest median
+        idx_highest_median = exact_ci_clean['Median_Sale_Ratio'].idxmax()
+        highest_median_lower_ci = exact_ci_clean.loc[idx_highest_median, 'Lower_CI']
+
+        # Find bin with lowest median
+        idx_lowest_median = exact_ci_clean['Median_Sale_Ratio'].idxmin()
+        lowest_median_upper_ci = exact_ci_clean.loc[idx_lowest_median, 'Upper_CI']
+
+        VEI_value = highest_median_lower_ci / lowest_median_upper_ci
+    else:
+        VEI_value = np.nan
+
     # Compile results in a dictionary
-    results = {
+    '''results = {
         "regression_summary": regression_summary,
         "median_changes_table": median_changes_table,
         "bootstrap_ci": bootstrap_ci,
-        "exact_ci": exact_ci
-    }
+        "exact_ci": exact_ci,
+        "VEI": VEI_value  # <-- new
+    }'''
     
-    return results
+    return VEI_value

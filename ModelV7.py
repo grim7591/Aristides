@@ -4,6 +4,8 @@ import statsmodels.formula.api as smf
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
 from IAAOFunctions import PRD, COD, PRB, weightedMean, PRBCI
+from VEI import VEI
+import joblib
 
 
 def prepare_data(
@@ -191,15 +193,16 @@ def train_and_evaluate(
 
     # 2) Fit OLS model
     print("[train_and_evaluate] Fitting regression model...")
-    model = smf.ols(formula=formula, data=train_data).fit()
+    regresult = smf.ols(formula=formula, data=train_data).fit()
+    joblib.dump(regresult, "regresult.pkl")
 
     # 3) Print Summary
     print("[train_and_evaluate] Model Summary:")
-    print(model.summary())
+    print(regresult.summary())
 
     # 4) Evaluate on test set
     test_data = test_data.copy()  # avoid SettingWithCopy issues
-    test_data['predicted_log_Assessment_Val'] = model.predict(test_data)
+    test_data['predicted_log_Assessment_Val'] = regresult.predict(test_data)
     test_data['predicted_Assessment_Val'] = np.exp(test_data['predicted_log_Assessment_Val'])
 
     # Predicted market value
@@ -209,6 +212,10 @@ def train_and_evaluate(
     # For the second MAE
     predicted_values_mae = test_data['predicted_Assessment_Val']
     actual_values_mae    = test_data['Assessment_Val']
+    
+    # sale_ratio calculation for VEI
+    test_data['predicted_Market_Val'] = test_data['predicted_Assessment_Val'] + test_data['MISC_Val']
+    test_data['sale_ratio'] = test_data['sale_ratio'] = test_data['predicted_Market_Val'] / df['sl_price']
 
     mae_1 = mean_absolute_error(predicted_values_market, actual_values_market)
     mae_2 = mean_absolute_error(predicted_values_mae, actual_values_mae)
@@ -221,6 +228,7 @@ def train_and_evaluate(
     wm_val   = weightedMean(predicted_values_market, actual_values_market)
     meanRatio= (predicted_values_market / actual_values_market).mean()
     medianRatio = (predicted_values_market / actual_values_market).median()
+    VEIresult = VEI(test_data, show_plots=False)
 
     # 5) Print results
     print("\n[train_and_evaluate] Performance Metrics:")
@@ -232,17 +240,18 @@ def train_and_evaluate(
     print(f"   PRBCI:                {prbci_val}")
     print(f"   WeightedMean:         {wm_val}")
     print(f"   meanRatio:            {meanRatio}")
-    print(f"   medianRatio:          {medianRatio}\n")
+    print(f"   medianRatio:          {medianRatio}")
+    print(f"   VEI:                  {VEIresult}\n")
 
-    return model, test_data
-def create_geospatial_output(df: pd.DataFrame, model, output_csv='MapData.csv'):
+    return regresult, test_data
+def create_geospatial_output(df: pd.DataFrame, regresult, output_csv='MapData.csv'):
     """
-    Applies `model` predictions to the entire `df` 
+    Applies `regresult` predictions to the entire `df` 
     and generates additional columns needed for geospatial mapping.
     Exports the result to CSV.
     """
     df = df.copy()  # to avoid mutating the original
-    df['predicted_log_Assessment_Val'] = model.predict(df)
+    df['predicted_log_Assessment_Val'] = regresult.predict(df)
     df['predicted_Assessment_Val']     = np.exp(df['predicted_log_Assessment_Val'])
     df['predicted_Market_Val']        = df['predicted_Assessment_Val'] + df['MISC_Val']
 

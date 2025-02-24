@@ -2,6 +2,10 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from IAAOFunctions import PRD, COD, PRB, weightedMean, averageDeviation, PRBCI
+from VEI import VEI
+import joblib
+
+regresult = joblib.load("regresult.pkl")
 def prepare_data(
     data_path: str,
     mls_data_path: str = None,
@@ -70,9 +74,9 @@ def prepare_data(
     df['prop_id'] = df['prop_id'].astype(str)
     
     return df
-def evaluate_model(df: pd.DataFrame, regresult) -> None:
+def evaluate_regresult(df: pd.DataFrame, regresult) -> None:
     """
-    Takes in a prepared dataframe and a trained regression model,
+    Takes in a prepared dataframe and a trained regression regresult,
     applies predictions and prints out metrics.
     """
     # Predict log-transformed assessment
@@ -84,6 +88,11 @@ def evaluate_model(df: pd.DataFrame, regresult) -> None:
     # Predicted total market value
     predicted_values_market = df['predicted_Assessment_Val'] + df['MISC_Val']
     actual_values_market    = df['sl_price']
+    
+     # sale_ratio calculation for VEI
+    df['predicted_Market_Val'] = df['predicted_Assessment_Val'] + df['MISC_Val']
+    df['sale_ratio'] = df['sale_ratio'] = df['predicted_Market_Val'] / df['sl_price']
+
     
     # For assessment MAE
     #   (Your code that does .85*(sl_price - MISC_val/.85))
@@ -101,6 +110,7 @@ def evaluate_model(df: pd.DataFrame, regresult) -> None:
     cod_result = COD(predicted_values_market, actual_values_market)
     prb_result = PRB(predicted_values_market, actual_values_market)
     prbci_result = PRBCI(predicted_values_market, actual_values_market)
+    VEI_result = VEI(df, show_plots=False)
     
     # Weighted mean, meanRatio, medianRatio
     wm_val = weightedMean(predicted_values_market, actual_values_market)
@@ -114,6 +124,7 @@ def evaluate_model(df: pd.DataFrame, regresult) -> None:
     print(f"weightedMean: {wm_val}")
     print(f"meanRatio: {mean_ratio}")
     print(f"medianRatio: {median_ratio}")
+    print(f"VEI: {VEI_result}")
     
     # If you want to return them for further usage:
     # return {
@@ -150,7 +161,7 @@ def main(regresult):
         filter_mls=False,
         filter_outliers=False
     )
-    evaluate_model(df_non_mls, regresult)
+    evaluate_regresult(df_non_mls, regresult)
     
     # Scenario B: MLS filtered
     print("\n=== MLS Only ===")
@@ -160,7 +171,7 @@ def main(regresult):
         filter_mls=True,       # Only difference: filter by MLS
         filter_outliers=False
     )
-    evaluate_model(df_mls, regresult)
+    evaluate_regresult(df_mls, regresult)
     
     # Scenario C: 3 * IQR filtered (Non-MLS)
     print("\n=== 3 * IQR Filtered ===")
@@ -170,7 +181,7 @@ def main(regresult):
         filter_mls=False,
         filter_outliers=True
     )
-    evaluate_model(df_iqr, regresult)
+    evaluate_regresult(df_iqr, regresult)
     
     # Scenario D: MLS + 3 * IQR
     print("\n=== MLS + 3 * IQR Filtered ===")
@@ -181,7 +192,7 @@ def main(regresult):
         filter_mls=True,
         filter_outliers=True
     )
-    evaluate_model(df_mls_iqr, regresult)
+    evaluate_regresult(df_mls_iqr, regresult)
 if __name__ == "__main__":
-    # Assume you already have `regresult` (the fitted regression model) somewhere
+    # Assume you already have `regresult` (the fitted regression regresult) somewhere
     main(regresult)
