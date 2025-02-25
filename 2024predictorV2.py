@@ -193,6 +193,11 @@ def main(regresult):
         filter_outliers=True
     )
     evaluate_regresult(df_mls_iqr, regresult)
+    
+    return df_mls_iqr
 if __name__ == "__main__":
     # Assume you already have `regresult` (the fitted regression regresult) somewhere
     main(regresult)
+    final_df = main(regresult)
+    
+    final_df.to_csv("df_mls_iqr.csv")
